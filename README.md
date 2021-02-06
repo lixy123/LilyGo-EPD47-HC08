@@ -11,6 +11,7 @@ LilyGo-EPD47 利用hc08蓝牙唤醒示例
 <b>二.代码说明:</b> <br/>
    1.epd47_blue_waker<br/>
      烧录到LilyGo-EPD47墨水屏， 实现墨水屏电池供电情境下, 平时休眠,按需显示。<br/>
+     
    2.epd47_blue_waker_center<br/>
      烧录到普通的ESP32开发板上，发送文字到墨水屏的示例代码。 <br/>
      例如：发送天气，记事，日期节日等文字。<br/>
