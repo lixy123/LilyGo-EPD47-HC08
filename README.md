@@ -9,10 +9,10 @@ LilyGo-EPD47 利用hc08蓝牙唤醒示例
     3.lilygo-epd47墨水屏每天唤醒并显示3次天气信息，平时偶尔有零星文字提醒记事显示， 普通的18650电池要能支撑约1-3个月<br/>
 <br/>
 <b>二.代码说明:</b> <br/>
-   1.epd47_blue_waker<br/>
+   1.epd47_blue_waker  (蓝牙从机-外设) <br/>
      烧录到LilyGo-EPD47墨水屏， 实现墨水屏电池供电情境下, 平时休眠,按需显示。<br/>
      
-   2.epd47_blue_waker_center<br/>
+   2.epd47_blue_waker_center (蓝牙主机-中心) <br/>
      烧录到普通的ESP32开发板上，发送文字到墨水屏的示例代码。 <br/>
      例如：发送天气，记事，日期节日等文字。<br/>
 <br/>    
