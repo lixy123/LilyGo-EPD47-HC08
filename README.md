@@ -39,8 +39,12 @@ define_avg3 每0.5秒声音均值（录音中静音判断）<br/>
 A.手表开机<br/>
 B.说话<br/>
 C.手表会显示语音识别的进度,识别到文字后通过蓝牙发送给lilygo-epd47墨水屏<br/>
-D.按下电源链进入休眠<br/>
+D.按下手表上的电源按钮进入休眠<br/>
 
+   <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/ink_epd47_1.jpg?raw=true' /> <br/>
+   <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/ink_epd47_2.jpg?raw=true' /><br/>
+演示视频地址:<br/>
+   https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/vid_20210215.avi?raw=true
 <br/>    
 <b>三.硬件说明:</b><br/>
 <b>1. 墨水屏接收 (烧录代码: epd47_blue_waker)</b><br/>
