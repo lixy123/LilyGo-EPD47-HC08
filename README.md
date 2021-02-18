@@ -49,6 +49,8 @@ D.按下手表上的电源按钮进入休眠<br/>
 
    <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/ink_epd47_1.jpg?raw=true' /> <br/>
    <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/ink_epd47_2.jpg?raw=true' /><br/>
+   <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/ink_weather.jpg?raw=true' /><br/>
+   <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/ink_chixi.jpg?raw=true' /><br/>
 演示视频地址:<br/>
    https://raw.githubusercontent.com/lixy123/LilyGo-EPD47-HC08/main/vid_20210215.avi
 <br/>    
