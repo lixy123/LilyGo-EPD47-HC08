@@ -36,8 +36,8 @@ void memo_historyManager::multi_append_txt_list_2(String txt)
   Serial.println("字串总宽度=" + String(GetCharwidth(txt)));
   String new_string = Do_MultiLineString(txt);
 
-  Serial.println("new_string="+new_string);
-  
+  Serial.println("new_string=" + new_string);
+
   splitString(new_string, "\n", buff_command2, TXT_LIST_NUM);
   //最多拆6行,多了也显示不下
   for (i = 0; i < TXT_LIST_NUM; i++)
@@ -64,36 +64,46 @@ int memo_historyManager::load_list()
 {
   int i;
   if (!FILESYSTEM.exists(TXTDATA_FILENAME)) {
-    Serial.println("load configure fail");
+    Serial.println(TXTDATA_FILENAME + String(" not exists"));
     return -1;
   }
-  StaticJsonBuffer<1024> jsonBuffer;
   String tmp = readData(TXTDATA_FILENAME);
-  JsonArray& array =  jsonBuffer.parseArray(tmp);
-  char * str1;
+
+  /*
+    StaticJsonBuffer<1024> jsonBuffer;
+
+    JsonArray& array =  jsonBuffer.parseArray(tmp);
+  */
+
+  // compute the required size
+  const size_t CAPACITY = JSON_ARRAY_SIZE(10);
+  // allocate the memory for the document
+  StaticJsonDocument<CAPACITY> doc;
+  // parse a JSON array
+  deserializeJson(doc, tmp);
+  // extract the values
+  JsonArray array = doc.as<JsonArray>();
+
+
+  String str1;
 
   for ( i = 0; i < array.size(); i++)
   {
-    str1 = (char *)array.get<char*>(i);
-    //Serial.print("i=" + String(i) + ",");
-    //Serial.println(str1);
+    // str1 = (char *)array.get<char*>(i);
+    str1 = array[i].as<String>();
 
-    if (strlen(str1) > 0)
+    if (str1.length() > 0)
     {
       //先进先出
       if (memolist.size() == TXT_LIST_NUM)
         memolist.remove(0);
-      //Serial.println("add:" + String(str1) );
+
       //追加上
-      memolist.add( String(str1));
+      memolist.add( str1);
     }
 
-    //Serial.println("txt_list[" + String(i) + "]=" + txt_list[i]);
   }
-  //txt_list_index =  TXT_LIST_NUM - 1;
 
-  //最后一个有效索引+1,并回转
-  //txt_list_index = (last_index + 1) % TXT_LIST_NUM;
   Serial.println("load_list,memolist.size=" + String(memolist.size()));
 
   return memolist.size();
@@ -108,8 +118,16 @@ void memo_historyManager::save_list()
     Serial.println(F("Failed to create file"));
     return;
   }
-  StaticJsonBuffer<1024> jsonBuffer;
-  JsonArray& array = jsonBuffer.createArray();
+  //StaticJsonBuffer<1024> jsonBuffer;
+  //JsonArray& array = jsonBuffer.createArray();
+
+  // compute the required size
+  const size_t CAPACITY = JSON_ARRAY_SIZE(10);
+  // allocate the memory for the document
+  StaticJsonDocument<CAPACITY> doc;
+  // create an empty array
+  JsonArray array = doc.to<JsonArray>();
+
   String now_string;
 
   for ( i = 0; i < memolist.size(); i++)
@@ -120,12 +138,18 @@ void memo_historyManager::save_list()
       array.add(now_string);
     }
   }
-  array.printTo(now_string);
+
+  //array.printTo(now_string);
+  serializeJson(array, now_string);
+
   Serial.println("save_list:" + now_string);
-  if (array.printTo(file) == 0)
-  {
+  /*
+    if (array.printTo(file) == 0)
+    {
     Serial.println(F("Failed to write to file"));
-  }
+    }
+  */
+  serializeJson(array, file);
   file.close();
   Serial.println("save_list rows=" + String(memolist.size()) );
 }
