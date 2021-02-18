@@ -23,6 +23,8 @@ LilyGo-EPD47 利用hc08蓝牙硬件实现平时休眠节能，随时按需唤醒
      通过wifi获取信息，不限于仅发送天气，还可获取并发送提醒记事，万年历，日期节日等文字。<br/>
      config.h 需要配置心知天气key, 从此处注册获得: https://www.seniverse.com/<br/>
      插线板供电,如电池供电支持不了1天<br/>
+     天气显示表格版本的API来自： https://www.jisuapi.com/ <br/>
+     API地址是: http://api.jisuapi.com/weather/query?appkey=****** b&cityid=* 仅在树莓派上调试完，还未移植到本程序。<br/>
    注:与lilygo-epd47墨水屏配合使用,一个发,一个收.<br/>
 
   <b> 4.t-watch2020-v3_mic_blue (t-watch2020 v3带麦克风版本) </b>  <br/>
