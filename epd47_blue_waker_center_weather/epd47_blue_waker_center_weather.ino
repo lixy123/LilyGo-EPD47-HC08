@@ -11,6 +11,7 @@
 #include <Wire.h>
 #include "RTClib.h"
 
+
 #define FILESYSTEM SPIFFS
 
 #define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
@@ -20,6 +21,12 @@
 //     原因是获取的天气JSON达到5kB,在Arduinojson解析时容易内存不足失败
 //     打开PSRAM能减少内存不足异常的机率
 //编译后固件大小: 1.8M
+//  编译分区：HUGE APP
+
+//定时唤醒的蓝牙服务器地址，仅仅连接并断开用，不发信息
+//应该做成配置式
+//注意：用小写字母
+String waker_blue_machine = "34:14:b5:90:89:17";
 
 hw_timer_t *timer = NULL;
 
@@ -34,16 +41,15 @@ Manager_blue_to_hc08* objManager_blue_to_hc08;
 //上次返回天气时间，防止同一分钟多次获取时间
 String last_weather_show_time = "";
 String last_weather_show_time_table = "";
+String last_wake_blue_time = "";
 
 //蓝牙发送接收因为信号问题，不能保证每次发送的天气都能被墨水屏接收到，可通过增加发送次数降低失败机率
 //定义几点几分返回天气的时间
 //def_weather_time 文本字串天气
 //def_weather_time_table 带表格显示多天的华丽版本天气
-//String def_weather_time = "10:10,13:10,16:10,18:00";
-//String def_weather_time_table = "08:30,12:00,15:00,17:00";
-
 String def_weather_time = "06:10,18:10";
 String def_weather_time_table = "06:30,18:30";
+String def_wake_blue_time = "05:20,05:50";  //考虑到蓝牙不稳定，未必连接正常，可间隔20分钟连续两次
 
 const int default_webserverporthttp = 80;
 
@@ -216,7 +222,6 @@ void setup() {
     rebootESP();
   }
 
-  //ip_send_ok = false;
   // 2.初始化时钟模块
   if (! rtc.begin()) {
     Serial.println("Couldn't find RTC");
@@ -245,15 +250,6 @@ void setup() {
   objManager_blue_to_hc08 = new Manager_blue_to_hc08();
 
 
-  //测试取得的数据
-  /*
-    int http_code =  objWeather_multidayManager->getnow_weather();
-    if  (http_code == HTTP_CODE_OK)
-    {
-    Serial.println("getresp=" +  objWeather_multidayManager->resp_new);
-    }
-  */
-
   Serial.println("setup end...");
   Serial.println("time:" + Get_ds3231_time_weather(1));
 }
@@ -261,6 +257,8 @@ void setup() {
 
 void loop()
 {
+  //scan_time=100;
+
   delay(10); // Delay a second between loops.
 
   //每约1秒 feed dog 一次
@@ -298,12 +296,13 @@ void loop()
       String weather_info  = Get_ds3231_time_weather(3) + " " + objcityWeather->toString() + " " + Get_ds3231_time_weather(1);
       Serial.println("get weather:" + weather_info);
       g_ink_showtxt = weather_info;
+      delay(5000);
       last_weather_show_time = Get_ds3231_time_weather(2);
     }
   }
 
-  weather_time = Get_ds3231_time_weather(1);
   //3.2 判断是否在设定"小时:分钟"时间，返回信息设置为当前天气_表格版
+  weather_time = Get_ds3231_time_weather(1); 
   if (last_weather_show_time_table != Get_ds3231_time_weather(2) and  def_weather_time_table.indexOf(weather_time) > -1)
   {
     int http_code = objWeather_multidayManager->getnow_weather();
@@ -312,8 +311,24 @@ void loop()
     if (http_code == HTTP_CODE_OK)
     {
       g_ink_showtxt = objWeather_multidayManager->resp_new;
+      delay(5000);
       last_weather_show_time_table = Get_ds3231_time_weather(2);
     }
+  }
+
+  
+  //3.3 判断是否在设定"小时:分钟"时间，唤醒远程hc08的蓝牙设备
+  //目前只有一台蓝牙设备需要唤醒，可考虑增加多台的情况。。。
+  //目前设计被唤醒的设备是树莓派，hc08的蓝牙的state引脚通过继电器，
+  //当hc08蓝牙设备被连接，蓝牙设备的引脚state为高电平，触发继电器让树莓派上的GPIO03与GND短接，从而遥控树莓派开机
+  //树莓派用电量约300ma,平时接市电，用电极少，目的不是为了省电，是为了减少树莓派SD卡磨损
+  weather_time = Get_ds3231_time_weather(1);
+  if (last_wake_blue_time != Get_ds3231_time_weather(2) and  def_wake_blue_time.indexOf(weather_time) > -1)
+  {
+    //最长蓝牙扫描时间60秒,连接上蓝牙后停顿5秒
+    objManager_blue_to_hc08->waker_remote_blue(waker_blue_machine, 60, 5);
+    delay(5000);
+    last_wake_blue_time = Get_ds3231_time_weather(2);
   }
 
 
@@ -329,7 +344,7 @@ void loop()
     delay(5000);
 
     //调试用
-    //delay(30000);
+    //delay(20000);
   }
 
 }
