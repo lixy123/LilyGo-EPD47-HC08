@@ -17,8 +17,7 @@ GetWeather::GetWeather() {
   req_url += "&location=";
   req_url += city;
   req_url += "&language=zh-Hans&unit=c&start=0&days=1";
-  Serial.println(req_url);
-  http_client.begin(req_url);
+
 }
 
 GetWeather::~GetWeather() {
@@ -27,9 +26,35 @@ GetWeather::~GetWeather() {
 }
 
 
+
+// 不能用，原因不明？
+/*
+  int GetWeather::getnow_weather(cityWeather* objcityWeather) {
+
+  Serial.println(req_url);
+  http_client.begin(req_url);
+
+  uint32_t start_time = millis() / 1000;
+  int http_code = http_client.GET();
+  String rsp;
+  Serial.println(http_code);
+  if (http_code > 0)
+  {
+    //Serial.printf("HTTP get code: %d\n", http_code);
+    if (http_code == HTTP_CODE_OK)
+    {
+      rsp = http_client.getString();
+      Serial.println(rsp);
+    }
+  }
+  return http_code;
+  }
+
+*/
+
 int GetWeather::getnow_weather_wifihttp(cityWeather* objcityWeather)
 {
-  int http_code = 0;
+  int http_code = -1;
   Serial.println("begin getnow_weather_wifihttp");
   while (!client.connect(http_host, 80)) {
     Serial.println("connection failed");
@@ -60,7 +85,7 @@ int GetWeather::getnow_weather_wifihttp(cityWeather* objcityWeather)
   {
     if (millis() / 1000 - starttime < 0)
       starttime = millis() / 1000;
-      
+
     if (millis() / 1000 - starttime >= 5)
     {
       Serial.println("timeout >5s");
@@ -129,8 +154,19 @@ int GetWeather::getnow_weather_wifihttp(cityWeather* objcityWeather)
   if (findresult.length() > 0)
   {
     Serial.println("> " + findresult);
-    StaticJsonBuffer<1024> jsonBuffer;
-    JsonObject& root = jsonBuffer.parseObject(findresult);
+    //StaticJsonBuffer<1024> jsonBuffer;
+    //JsonObject& root = jsonBuffer.parseObject(findresult);
+
+    //StaticJsonDocument<1024> root;
+    DeserializationError error = deserializeJson(root, findresult);
+    
+    //F:\esp32\libraries\ArduinoJson\src\ArduinoJson\Deserialization\DeserializationError.hpp
+    if (error) {
+      Serial.println("Failed to parse string,error=" + String(error.c_str()));
+      return http_code;
+    }
+
+
     objcityWeather->weather = root["results"][0]["daily"][0]["text_day"].as<String>();
 
     objcityWeather->date_now = root["results"][0]["daily"][0]["date"].as<String>();
@@ -144,23 +180,7 @@ int GetWeather::getnow_weather_wifihttp(cityWeather* objcityWeather)
     objcityWeather->last_update = root["results"][0]["last_update"].as<String>();
 
     http_code = HTTP_CODE_OK;
+    root.clear();
   }
   return (http_code);
-}
-
-int GetWeather::getnow_weather(cityWeather* objcityWeather) {
-  uint32_t start_time = millis() / 1000;
-  int http_code = http_client.GET();
-  String rsp;
-  Serial.println(http_code);
-  if (http_code > 0)
-  {
-    //Serial.printf("HTTP get code: %d\n", http_code);
-    if (http_code == HTTP_CODE_OK)
-    {
-      rsp = http_client.getString();
-      Serial.println(rsp);
-    }
-  }
-  return http_code;
 }

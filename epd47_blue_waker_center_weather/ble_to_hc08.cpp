@@ -166,6 +166,13 @@ bool Manager_blue_to_hc08::connectToServer() {
 //字串长于20字符必须特殊处理,分拆发送，否则只能发出部分数据
 void Manager_blue_to_hc08::send_cmd_long(String cmd)
 {
+  //字节数超过250，特别处理，否则发送接收异常
+  if (cmd.length()>250)
+  {
+     send_cmd_long_long(cmd);
+     return; 
+  }
+  Serial.println("send_cmd_long,len="+String(cmd.length()));
   //将字串拆成20个字节一组多次发出
   char cArr[cmd.length() + 1];
   cmd.toCharArray(cArr, cmd.length() + 1);
@@ -181,10 +188,44 @@ void Manager_blue_to_hc08::send_cmd_long(String cmd)
       send_num =  cmd.length() - all_send_num ;
     pRemoteCharacteristic->writeValue(sound_bodybuff + all_send_num, send_num);
     all_send_num = all_send_num + send_num;
-    delay(20);
+    delay(40);
   }
-  //Serial.println(">> 发出长度 " + String(cmd.length() ));
-  //Serial.println(">> 发出长度 all_send_num=" + String(all_send_num));
+Serial.println("send_cmd_long ok.");
+}
+
+//大于300字节情况，需要特别处理
+//主要是1KB字节的天气JSON信息
+void Manager_blue_to_hc08::send_cmd_long_long(String cmd)
+{
+   Serial.println("send_cmd_long_long,len="+String(cmd.length()));
+  //将字串拆成20个字节一组多次发出
+  char cArr[cmd.length() + 1];
+  cmd.toCharArray(cArr, cmd.length() + 1);
+  uint8_t * sound_bodybuff;
+  sound_bodybuff = (uint8_t *)cArr;
+  int all_send_num = 0; //已经发送出去的字节
+  int send_num = 0;     //本次准备发送出去的字节
+  int loop1=0;
+  while (all_send_num < cmd.length())
+  {
+    loop1=loop1+1;
+     Serial.println("writeValue loop1="+String(loop1));
+    if (cmd.length() - all_send_num > 20)
+      send_num = 20;
+    else
+      send_num =  cmd.length() - all_send_num ;
+    pRemoteCharacteristic->writeValue(sound_bodybuff + all_send_num, send_num);
+    all_send_num = all_send_num + send_num;
+    delay(40);
+
+    //每发完5次及10次， 一次20字节休息一下！
+    //1KB,分51次发送，30-40 秒发送完成， 这是发1kB数据调试的最少时间经验值，如果数据>1K，休息间隔秒数需调试
+    if (loop1 % 5 == 0) 
+      delay(2000);
+    if (loop1 % 10 == 0) 
+      delay(1000);      
+  }
+Serial.println("send_cmd_long_long ok.");
 }
 
 
@@ -294,16 +335,21 @@ bool Manager_blue_to_hc08::blue_connect_sendmsg(String txt, bool quick)
   if (blue_connected == true)
   {
     Serial.println("3.向蓝牙服务器发送数据");
-    //3.1发出唤醒命令，远程唤醒蓝牙服务端
-    //时间要略长一点，太快有可能蓝牙端重启没收到信息,最少要2秒，否则服务端收不到数据
-    bool ret = blue_send_cmd("waker", 2, 2);
+    //3.1发出唤醒命令，远程唤醒蓝牙服务端,最少要3秒
+    bool ret = blue_send_cmd("waker", 3, 3);
     delay(500);
     //理论应不返回数据
     Serial.println(">>>" + blue_receive_txt);
 
     //3.2发送文本串数据
-    //如果不数据长度较大，5秒限时可能要加长
-    ret = blue_send_cmd(txt + ">>>", 5, 1);
+    //普通数据，给5秒时间就够
+    //大于300字节，需要60秒
+    if (txt.length()>300)
+       ret = blue_send_cmd(txt + ">>>", 60, 1);
+    else
+       ret = blue_send_cmd(txt + ">>>", 5, 1);
+
+       
     Serial.println(">>>" + blue_receive_txt);
 
     //全部任务执行完毕，可以开始休眠

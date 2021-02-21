@@ -3,7 +3,7 @@
 #include <Arduino.h>
 
 //定义是否接收蓝牙通知
-//能节省1-2秒时间
+//实际测试可以不接收蓝牙反馈字节，能节省1-2秒时间， 调试时可加上
 //#define blue_notify 
 
 class Manager_blue_to_hc08
@@ -22,7 +22,8 @@ class Manager_blue_to_hc08
 
 
     bool connectToServer() ;
-    void send_cmd_long(String cmd);
+    void send_cmd_long(String cmd);  //300字节内调用
+    void send_cmd_long_long(String cmd); //大于300字节调用, 如用前一函数，会丢失或数据混乱
     bool blue_send_cmd(String cmd, float delay_sec, int min_delay_sec);
   public:
     Manager_blue_to_hc08();

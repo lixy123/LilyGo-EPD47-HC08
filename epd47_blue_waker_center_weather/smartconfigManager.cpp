@@ -106,6 +106,7 @@ void smartconfigManager::connectwifi()
     Serial.println("Connected");
     Serial.println("My Local IP is : ");
     Serial.println(WiFi.localIP());
+    delay(5000); //很重要，待生效！
   }
   else
   {

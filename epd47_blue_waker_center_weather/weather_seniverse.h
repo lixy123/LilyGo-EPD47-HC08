@@ -29,14 +29,15 @@ class GetWeather
     HTTPClient http_client;
     WiFiClient client;
 
-    //缓存天气数据，正常约500字节左右
+    //缓存天气字符串数据，正常约500字节左右
     uint8_t buff[1024];
-
+    StaticJsonDocument<1024> root;  //放在此处，减少函数申请内存异常的机率。
   public:
     GetWeather();
     ~GetWeather();
-    //开蓝牙时可以用wificlient对象
+    //用这个
     int getnow_weather_wifihttp(cityWeather* objcityWeather);
-    //开蓝牙时不可用httpclient对象，不要用此函数！
-    int getnow_weather(cityWeather* objcityWeather);
+    //用这函数访问会返回-1, 有可能是与开启蓝牙有关，有可能是因为访问对象是https类型, 不稳定，不好用
+    //http_client对象访问https不好用
+     //int getnow_weather(cityWeather* objcityWeather);
 };

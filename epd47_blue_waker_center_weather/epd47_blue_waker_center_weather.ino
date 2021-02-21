@@ -1,5 +1,6 @@
 #include "ble_to_hc08.h"
-#include "weather_seniverse.h"
+#include "weather_seniverse.h"  //这个是早期用的，只能显示文本
+#include "weather_multiday.h"   //这个显示效果较华丽
 #include "smartconfigManager.h"
 
 #include <AsyncTCP.h>
@@ -15,7 +16,11 @@
 #define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
 
 
+//说明：weather_multiday 使用 华丽天气数据推送功能需要打开PSRAM
+//     原因是获取的天气JSON达到5kB,在Arduinojson解析时容易内存不足失败
+//     打开PSRAM能减少内存不足异常的机率
 //编译后固件大小: 1.8M
+
 hw_timer_t *timer = NULL;
 
 uint32_t loop_num = 0; //dog用
@@ -23,22 +28,29 @@ uint32_t loop_num = 0; //dog用
 GetWeather* objGetWeather;
 cityWeather* objcityWeather;
 smartconfigManager* objsmartconfigManager;
-
+Weather_multidayManager * objWeather_multidayManager;
 Manager_blue_to_hc08* objManager_blue_to_hc08;
 
 //上次返回天气时间，防止同一分钟多次获取时间
 String last_weather_show_time = "";
-//定义几点几分返回天气的时间
+String last_weather_show_time_table = "";
 
-String def_weather_time = "05:10,12:10,18:10,23:00";
-//String def_weather_time = "20:25,20:30,20:35,20:40";
+//蓝牙发送接收因为信号问题，不能保证每次发送的天气都能被墨水屏接收到，可通过增加发送次数降低失败机率
+//定义几点几分返回天气的时间
+//def_weather_time 文本字串天气
+//def_weather_time_table 带表格显示多天的华丽版本天气
+//String def_weather_time = "10:10,13:10,16:10,18:00";
+//String def_weather_time_table = "08:30,12:00,15:00,17:00";
+
+String def_weather_time = "06:10,18:10";
+String def_weather_time_table = "06:30,18:30";
 
 const int default_webserverporthttp = 80;
 
 char daysOfTheWeek[7][12] = {"星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"};
 
 String g_ink_showtxt = "";
-String g_ink_showtxt2 = "";
+
 
 bool rebootESP_flag = false;
 AsyncWebServer *server;
@@ -48,6 +60,7 @@ RTC_DS3231 rtc;
 //可以用wificlient对象，但不可用HTTPClient对象！
 void rebootESP() {
   Serial.print("Rebooting ESP32: ");
+  delay(100);
   //ESP.restart();  左边的方法重启后连接不上esp32
   esp_restart();
 }
@@ -151,7 +164,6 @@ void configureWebServer() {
     if (request->hasParam("txt_msg")) {
       inputMessage = request->getParam("txt_msg")->value();
       g_ink_showtxt = inputMessage;
-      g_ink_showtxt2 = inputMessage;
       inputParam = "txt_msg";
     }
     else {
@@ -172,7 +184,8 @@ void configureWebServer() {
 
 
 void IRAM_ATTR resetModule() {
-  ets_printf("reboot\n");
+  ets_printf("resetModule reboot\n");
+  delay(100);
   //esp_restart_noos(); 旧api
   esp_restart();
 }
@@ -183,7 +196,7 @@ void setup() {
   //为防意外，n秒后强制复位重启，一般用不到。。。
   //n秒如果任务处理不完，看门狗会让esp32自动重启,防止程序跑死...
   //如果串口有新数据，时间会重新计算
-  int wdtTimeout = 5 * 60 * 1000; //设置5分钟 watchdog
+  int wdtTimeout = 10 * 60 * 1000; //设置10分钟 watchdog
 
   timer = timerBegin(0, 80, true);                  //timer 0, div 80
   timerAttachInterrupt(timer, &resetModule, true);  //attach callback
@@ -217,6 +230,9 @@ void setup() {
 
   objsmartconfigManager->connectwifi();
 
+  objWeather_multidayManager = new Weather_multidayManager;
+
+
   //4.startup web server
   Serial.println("Starting Webserver ...");
   //启动网页服务器
@@ -228,8 +244,18 @@ void setup() {
   //5.打开蓝牙
   objManager_blue_to_hc08 = new Manager_blue_to_hc08();
 
+
+  //测试取得的数据
+  /*
+    int http_code =  objWeather_multidayManager->getnow_weather();
+    if  (http_code == HTTP_CODE_OK)
+    {
+    Serial.println("getresp=" +  objWeather_multidayManager->resp_new);
+    }
+  */
+
   Serial.println("setup end...");
-  Serial.println("time:"+ Get_ds3231_time_weather(1));
+  Serial.println("time:" + Get_ds3231_time_weather(1));
 }
 
 
@@ -237,18 +263,14 @@ void loop()
 {
   delay(10); // Delay a second between loops.
 
-  //每约10秒 feed dog 一次
+  //每约1秒 feed dog 一次
   loop_num = loop_num + 1;
-  if (loop_num > 1000)
+  if (loop_num > 100)
   {
     // Serial.println("feed watchdog...");
     loop_num = 0;
     timerWrite(timer, 0); //reset timer (feed watchdog)
   }
-
-
-  //if (millis() / 1000 < all_start_time)
-  //  all_start_time = millis() ;
 
 
   //1.连接wifi
@@ -262,28 +284,52 @@ void loop()
     rebootESP();
   }
 
-  //3.判断是否在设定"小时:分钟"时间，返回信息设置为当前天气
+  //3 第一个是字符串时钟，第二个是华丽带表格的时钟，两个的时间要求至少间隔5分钟以上
+  //3.1 判断是否在设定"小时:分钟"时间，返回信息设置为当前天气
   String weather_time = Get_ds3231_time_weather(1);
   if (last_weather_show_time != Get_ds3231_time_weather(2) and  def_weather_time.indexOf(weather_time) > -1)
   {
     int http_code = objGetWeather->getnow_weather_wifihttp(objcityWeather);
+    //int http_code = objGetWeather->getnow_weather(objcityWeather);
+    // C:\Users\32446\AppData\Local\Arduino15\packages\esp32\hardware\esp32\1.0.5-rc6\libraries\HTTPClient\src\HTTPClient.h
+    // HTTP_CODE_OK=200
     if (http_code == HTTP_CODE_OK)
     {
       String weather_info  = Get_ds3231_time_weather(3) + " " + objcityWeather->toString() + " " + Get_ds3231_time_weather(1);
       Serial.println("get weather:" + weather_info);
       g_ink_showtxt = weather_info;
-      g_ink_showtxt2 = weather_info;
       last_weather_show_time = Get_ds3231_time_weather(2);
     }
   }
 
-  //一次未成功发送，再试
+  weather_time = Get_ds3231_time_weather(1);
+  //3.2 判断是否在设定"小时:分钟"时间，返回信息设置为当前天气_表格版
+  if (last_weather_show_time_table != Get_ds3231_time_weather(2) and  def_weather_time_table.indexOf(weather_time) > -1)
+  {
+    int http_code = objWeather_multidayManager->getnow_weather();
+    // C:\Users\32446\AppData\Local\Arduino15\packages\esp32\hardware\esp32\1.0.5-rc6\libraries\HTTPClient\src\HTTPClient.h
+    // HTTP_CODE_OK=200
+    if (http_code == HTTP_CODE_OK)
+    {
+      g_ink_showtxt = objWeather_multidayManager->resp_new;
+      last_weather_show_time_table = Get_ds3231_time_weather(2);
+    }
+  }
+
+
+  //4.如果有发送数据，进行发送
+  //数据来源：天气，华丽表格版天气，通过网页输入的文字
   if (g_ink_showtxt.length() > 0)
   {
+    //正常300字节内5秒发送完成
+    //1KB字节数据发送需要更长时间，发送中间需要定时delay，约35-40秒左右
     bool ret_bool = objManager_blue_to_hc08->blue_connect_sendmsg(g_ink_showtxt, false);
     if (ret_bool)
       g_ink_showtxt = "";
     delay(5000);
+
+    //调试用
+    //delay(30000);
   }
 
 }
