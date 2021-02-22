@@ -259,11 +259,11 @@ void loop()
 {
   //scan_time=100;
 
-  delay(10); // Delay a second between loops.
+  delay(1000); // Delay a second between loops.
 
-  //每约1秒 feed dog 一次
+  //每30秒 feed dog 一次
   loop_num = loop_num + 1;
-  if (loop_num > 100)
+  if (loop_num > 30)
   {
     // Serial.println("feed watchdog...");
     loop_num = 0;
@@ -296,13 +296,12 @@ void loop()
       String weather_info  = Get_ds3231_time_weather(3) + " " + objcityWeather->toString() + " " + Get_ds3231_time_weather(1);
       Serial.println("get weather:" + weather_info);
       g_ink_showtxt = weather_info;
-      delay(5000);
       last_weather_show_time = Get_ds3231_time_weather(2);
     }
   }
 
   //3.2 判断是否在设定"小时:分钟"时间，返回信息设置为当前天气_表格版
-  weather_time = Get_ds3231_time_weather(1); 
+  weather_time = Get_ds3231_time_weather(1);
   if (last_weather_show_time_table != Get_ds3231_time_weather(2) and  def_weather_time_table.indexOf(weather_time) > -1)
   {
     int http_code = objWeather_multidayManager->getnow_weather();
@@ -311,12 +310,11 @@ void loop()
     if (http_code == HTTP_CODE_OK)
     {
       g_ink_showtxt = objWeather_multidayManager->resp_new;
-      delay(5000);
       last_weather_show_time_table = Get_ds3231_time_weather(2);
     }
   }
 
-  
+
   //3.3 判断是否在设定"小时:分钟"时间，唤醒远程hc08的蓝牙设备
   //目前只有一台蓝牙设备需要唤醒，可考虑增加多台的情况。。。
   //目前设计被唤醒的设备是树莓派，hc08的蓝牙的state引脚通过继电器，
@@ -325,8 +323,8 @@ void loop()
   weather_time = Get_ds3231_time_weather(1);
   if (last_wake_blue_time != Get_ds3231_time_weather(2) and  def_wake_blue_time.indexOf(weather_time) > -1)
   {
-    //最长蓝牙扫描时间60秒,连接上蓝牙后停顿5秒
-    objManager_blue_to_hc08->waker_remote_blue(waker_blue_machine, 60, 5);
+    //最长蓝牙扫描时间60秒,连接上蓝牙后停顿1秒
+    objManager_blue_to_hc08->waker_remote_blue(waker_blue_machine, 60, 1);
     delay(5000);
     last_wake_blue_time = Get_ds3231_time_weather(2);
   }
@@ -344,7 +342,7 @@ void loop()
     delay(5000);
 
     //调试用
-    //delay(20000);
+    //delay(60000);
   }
 
 }

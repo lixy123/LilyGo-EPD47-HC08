@@ -56,8 +56,20 @@ class MyClientCallback : public BLEClientCallbacks {
     }
 
     void onDisconnect(BLEClient* pclient) {
-      blue_connected = false;
+      //blue_connected = false;
       Serial.println("blue onDisconnect");
+
+      //目前蓝牙连接方法调用 pClient->connect(myDevice)有bug, 如连接失败会无限等待，程序阻塞
+      //如果在调用蓝牙连接方法时出现此事件，且此变量为false
+      //说明蓝牙连接在阻塞状态，无条件进行重启，防止
+      if (blue_connected == false)
+      {
+        ets_printf("blue connect timeout, reboot\n");
+        delay(100);
+        //esp_restart_noos(); 旧api
+        esp_restart();
+      }
+
     }
 };
 
@@ -66,9 +78,6 @@ class MyClientCallback : public BLEClientCallbacks {
    Scan for BLE servers and find the first one that advertises the service we are looking for.
 */
 class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
-    /**
-        Called for each advertising BLE server.
-    */
     //打印找到的服务
     void onResult(BLEAdvertisedDevice advertisedDevice) {
       Serial.print("查到蓝牙服务: ");
@@ -84,22 +93,21 @@ class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
         if (String(advertisedDevice.getAddress().toString().c_str()) == search_waker_blue_server_address)
         {
           Serial.println("找到待唤醒的蓝牙BLE服务");
-          BLEDevice::getScan()->stop();
+          
           myDevice_waker = new BLEAdvertisedDevice(advertisedDevice);
           blue_doConnect = true;
+          BLEDevice::getScan()->stop();  //此句放在最后，否则 blue_doConnect = true; 可能来不及执行
         }
       }
-      else if
-      ( String(advertisedDevice.getName().c_str()) == blue_name ||
+      else if ( String(advertisedDevice.getName().c_str()) == blue_name ||
           ( blue_server_address.length() > 0 &&  String(advertisedDevice.getAddress().toString().c_str()) == blue_server_address)
       )
       {
         blue_server_address = advertisedDevice.getAddress().toString().c_str();
-        Serial.println("找到蓝牙BLE服务");
-        BLEDevice::getScan()->stop();
         myDevice = new BLEAdvertisedDevice(advertisedDevice);
-        blue_doConnect = true;
-        //blue_doScan = true;
+        blue_doConnect = true;        
+        Serial.println("找到蓝牙BLE服务");
+        BLEDevice::getScan()->stop();  //此句放在最后，否则 blue_doConnect = true; 可能来不及执行
       }
 
     } // onResult
@@ -216,7 +224,7 @@ bool Manager_blue_to_hc08::connectToServer() {
     pRemoteCharacteristic->registerForNotify(notifyCallback);
 #endif
 
-  blue_connected = true;
+  //blue_connected = true;
   return true;
 }
 
@@ -384,16 +392,16 @@ bool Manager_blue_to_hc08::blue_connect_sendmsg(String txt, bool quick)
   else
     pBLEScan->start(scan_time, false);  //阻塞式查找蓝牙设备
 
+
+  //Serial.println("blue_doConnect="+String(blue_doConnect));
+
   blue_doConnect_step = 2;
   //2.连接目标蓝牙服务器
   //有可能在连接时阻塞，建议用定时狗，如异常就重启！！！
   if (blue_doConnect == true) {
     Serial.println("2.连接目标蓝牙服务器");
-    if (connectToServer()) {
-      Serial.println("检索 BLE Server 服务成功！");
-    } else {
-      Serial.println("检索 BLE Server 服务失败！");
-    }
+    blue_connected = connectToServer();
+
   }
 
   blue_doConnect_step = 3;

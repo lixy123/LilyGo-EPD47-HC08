@@ -54,12 +54,7 @@ GetWeather::~GetWeather() {
 
 int GetWeather::getnow_weather_wifihttp(cityWeather* objcityWeather)
 {
-  int http_code = -1;
-  Serial.println("begin getnow_weather_wifihttp");
-  while (!client.connect(http_host, 80)) {
-    Serial.println("connection failed");
-  }
-  Serial.println("connect ok");
+
 
   String line = "";
   bool http_ok = false;
@@ -75,6 +70,25 @@ int GetWeather::getnow_weather_wifihttp(cityWeather* objcityWeather)
   starttime = millis() / 1000;
   all_starttime = starttime;
 
+  int http_code = -1;
+  Serial.println("begin getnow_weather_wifihttp");
+  while (!client.connect(http_host, 80)) {
+
+    Serial.println("connection failed");
+    delay(1000);
+    if (millis() / 1000 - starttime < 0)
+      starttime = millis() / 1000;
+
+    if (millis() / 1000 - starttime >= 10)
+    {
+      Serial.println("connect timeout >10s");
+      return 0;
+    }
+
+
+  }
+  Serial.println("connect " + String(http_host) +  " ok");
+
   //以下信息通过 Fiddler 工具分析协议，Raw部分获得
   String  HttpHeader = String("GET ") + String(req_url) +
                        String(" HTTP/1.1\r\nHost: ") + http_host + String("\r\nConnection: keep-alive") + String("\r\n\r\n");
@@ -88,7 +102,7 @@ int GetWeather::getnow_weather_wifihttp(cityWeather* objcityWeather)
 
     if (millis() / 1000 - starttime >= 5)
     {
-      Serial.println("timeout >5s");
+      Serial.println("wait available timeout >5s");
       return 0;
     }
     delay(10);
@@ -159,7 +173,7 @@ int GetWeather::getnow_weather_wifihttp(cityWeather* objcityWeather)
 
     //StaticJsonDocument<1024> root;
     DeserializationError error = deserializeJson(root, findresult);
-    
+
     //F:\esp32\libraries\ArduinoJson\src\ArduinoJson\Deserialization\DeserializationError.hpp
     if (error) {
       Serial.println("Failed to parse string,error=" + String(error.c_str()));
