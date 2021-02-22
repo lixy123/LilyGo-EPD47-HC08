@@ -169,8 +169,9 @@ void weatherManager::draw_weather(String weather_result)
     JsonObject& root = jsonBuffer.parseObject(weather_result);
   */
 
-  //字符长度过大，必须用 DynamicJsonDocument
-  DynamicJsonDocument  root(10 * 1024);
+  //字符长度约1020B上下，为保险，3KB，
+  //必须用 DynamicJsonDocument
+  DynamicJsonDocument  root(3 * 1024);
   deserializeJson(root, weather_result);
 
   int status = root["status"].as<int>();

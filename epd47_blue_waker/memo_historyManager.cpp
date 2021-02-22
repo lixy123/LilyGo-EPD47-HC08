@@ -76,9 +76,9 @@ int memo_historyManager::load_list()
   */
 
   // compute the required size
-  const size_t CAPACITY = JSON_ARRAY_SIZE(10);
+  //const size_t CAPACITY = JSON_ARRAY_SIZE(10);
   // allocate the memory for the document
-  StaticJsonDocument<CAPACITY> doc;
+  StaticJsonDocument<1024> doc;
   // parse a JSON array
   deserializeJson(doc, tmp);
   // extract the values
@@ -122,9 +122,9 @@ void memo_historyManager::save_list()
   //JsonArray& array = jsonBuffer.createArray();
 
   // compute the required size
-  const size_t CAPACITY = JSON_ARRAY_SIZE(10);
+  //const size_t CAPACITY = JSON_ARRAY_SIZE(10);
   // allocate the memory for the document
-  StaticJsonDocument<CAPACITY> doc;
+  StaticJsonDocument<1024> doc;
   // create an empty array
   JsonArray array = doc.to<JsonArray>();
 
