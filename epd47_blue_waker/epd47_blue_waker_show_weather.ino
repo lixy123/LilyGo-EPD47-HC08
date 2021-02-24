@@ -4,8 +4,8 @@
 #include "hz3500_36.h"
 #include "hz3500_16.h"
 
-
 #include "showweather.h"
+
 
 #define BUTTON_BOOT_PRESS  39
 
@@ -86,7 +86,7 @@ bool check_pin()
 void display_calender( int mmonth, int mday, int days_of_month, int day_offset)
 {
   // display calender
-  Serial.println(String(mmonth)+","+String(mday)+","+String(days_of_month)+","+String(day_offset));
+  Serial.println(String(mmonth) + "," + String(mday) + "," + String(days_of_month) + "," + String(day_offset));
   int  x1, y1;
   int w, h;
   int now_x, now_y;
@@ -203,15 +203,7 @@ void ShowStr( String mystring, int x0, int y0, int font_size, uint8_t * framebuf
 //如果非首次上电,且蓝牙没获取到新信息，则跳过此步，提升效率
 void init_hard(bool load_history)
 {
-  epd_init();
-  // framebuffer = (uint8_t *)heap_caps_malloc(EPD_WIDTH * EPD_HEIGHT / 2, MALLOC_CAP_SPIRAM);
-  framebuffer = (uint8_t *)ps_calloc(sizeof(uint8_t), EPD_WIDTH * EPD_HEIGHT / 2);
-  if (!framebuffer) {
-    Serial.println("alloc memory failed !!!");
-    delay(1000);
-    while (1);
-  }
-  memset(framebuffer, 0xFF, EPD_WIDTH * EPD_HEIGHT / 2);
+
 
   //初始化SPIFFS
   if (!SPIFFS.begin(true))
@@ -386,7 +378,8 @@ void goto_sleep()
 {
   Serial.println("sleep...");
   delay(100);
-  //不调用此句无法节能, 此句必须在深度休眠起作用，轻度休眠无效！
+
+  //不调用此句无法节能, 此句必须配合esp32深度休眠,轻度休眠无效！
   epd_poweroff_all();
 
   //只能使用RTC功能的GPIO：0，2，4，12-15，25-27，32-39
@@ -404,9 +397,9 @@ void goto_sleep()
 
 void setup() {
   Serial.begin(115200);  // 可用  RX,TX
+  wakeup_reason = esp_sleep_get_wakeup_cause();
 
   pin_link = check_pin();
-
 
   wakeup_time = millis() / 1000;
   blue_receive_txt_time = 0;
@@ -442,6 +435,19 @@ void setup() {
     display_calender(2, 18, 1);
   */
 
+  //如果启动后不调用此函数，有可能电流一直保持在在60ma，起不到节能效果
+  //此步骤不适合在唤醒后没有显示需求时优化掉
+  epd_init();
+  // framebuffer = (uint8_t *)heap_caps_malloc(EPD_WIDTH * EPD_HEIGHT / 2, MALLOC_CAP_SPIRAM);
+  framebuffer = (uint8_t *)ps_calloc(sizeof(uint8_t), EPD_WIDTH * EPD_HEIGHT / 2);
+  if (!framebuffer) {
+    Serial.println("alloc memory failed !!!");
+    delay(1000);
+    while (1);
+  }
+  memset(framebuffer, 0xFF, EPD_WIDTH * EPD_HEIGHT / 2);
+
+
   //清屏
   if (pin_link)
   {
@@ -460,7 +466,7 @@ void setup() {
 
   Serial.println("start");
 
-  wakeup_reason = esp_sleep_get_wakeup_cause();
+
 
   //首次上电或按RetSet,进入深度休眠， 局开
   //方便客户端使用，1.唤醒。 2.发送数据
