@@ -35,6 +35,10 @@ LilyGo-EPD47 利用hc08蓝牙硬件实现平时休眠节能，随时按需唤醒
 
 <b>三.代码说明:</b> <br/>
   <b> 1.epd47_blue_waker  (蓝牙从机-外设) </b> <br/>
+   <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/ink_epd47_1.jpg?raw=true' /> <br/>
+   <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/ink_epd47_2.jpg?raw=true' /><br/>
+   <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/ink_weather.jpg?raw=true' /><br/>
+   <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/ink_chixi.jpg?raw=true' /><br/>
      烧录到LilyGo-EPD47墨水屏， 实现墨水屏电池供电情境下, 平时休眠,按需显示。<br/>
      电池供电. <br/>
      
@@ -44,6 +48,7 @@ LilyGo-EPD47 利用hc08蓝牙硬件实现平时休眠节能，随时按需唤醒
    注:与lilygo-epd47墨水屏配合使用,一个发,一个收.<br/>
    
   <b> 3.epd47_blue_waker_center_weather (蓝牙主机-中心)</b>  <br/>
+   <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/esp32_center.jpg?raw=true' /> <br/>
      烧录到普通便宜的的ESP32开发板上，使用了一个ds3231时钟模块，根据代码编写可每天2-3次在设定时间wifi获取天气后将天气预报用蓝牙推送至墨水屏供显示的示例代码。<br/>
      通过wifi除了获取天气信息，还可获取万年历，日期节日，记事提醒等文字，待发挥。<br/>
      config.h 需要配置心知天气key,极速天气key ,注册方式见config.h的说明<br/>
@@ -58,6 +63,7 @@ LilyGo-EPD47 利用hc08蓝牙硬件实现平时休眠节能，随时按需唤醒
    注:与lilygo-epd47墨水屏配合使用,一个发,一个收.<br/>
 
   <b> 4.epd47_blue_waker_center_nb_iot (蓝牙主机-中心)</b>  <br/>
+    <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/esp32_center_lora.jpg?raw=true' /> <br/>
       epd47_blue_waker_center_weather的NB-IOT版本<br/>
       当前仅实现了前一版本的2行文字信息的天气信息的功能 <br/>
       本质是是把NB-IOT当路由器使用，特别适合于家里或车上没有月租wifi网络，或公司里面虽然有wifi,便上网需要手机验证，不适合单片机连接上网的场合。<br/>
@@ -88,11 +94,9 @@ A.手表开机<br/>
 B.说话<br/>
 C.手表会显示语音识别的进度,识别到文字后通过蓝牙发送给lilygo-epd47墨水屏<br/>
 D.按下手表上的电源按钮进入休眠<br/>
+  
+ 
 
-   <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/ink_epd47_1.jpg?raw=true' /> <br/>
-   <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/ink_epd47_2.jpg?raw=true' /><br/>
-   <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/ink_weather.jpg?raw=true' /><br/>
-   <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/ink_chixi.jpg?raw=true' /><br/>
 
 演示视频地址:<br/>
    https://raw.githubusercontent.com/lixy123/LilyGo-EPD47-HC08/main/vid_20210215.avi
