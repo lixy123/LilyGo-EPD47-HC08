@@ -66,7 +66,7 @@ LilyGo-EPD47 利用hc08蓝牙硬件实现平时休眠节能，随时按需唤醒
     <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/esp32_center_lora.jpg?raw=true' /> <br/>
       epd47_blue_waker_center_weather的NB-IOT版本<br/>
       当前仅实现了前一版本的2行文字信息的天气信息的功能 <br/>
-      本质是是把NB-IOT当路由器使用，特别适合于家里或车上没有月租wifi网络，或公司里面虽然有wifi,便上网需要手机验证，不适合单片机连接上网的场合。<br/>
+      本质是是把NB-IOT当路由器使用，适合于仓库，家里或车上没有wifi网络，或公司里虽然有wifi,但各种上网验证，不适合单片机连接上网的场合。<br/>
       Sim8020c的TX,RX分别连接ESP32的12,13引脚.<br/>
       注： 如果未来需求无扩充，仅仅是在固定时间点获取天气并显示到墨水屏，有两方案：.<br/>
       1.本代码增加休眠节能。.<br/>
