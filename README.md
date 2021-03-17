@@ -64,9 +64,8 @@ LilyGo-EPD47 利用hc08蓝牙硬件实现平时休眠节能，随时按需唤醒
 
   <b> 4.epd47_blue_waker_center_nb_iot (蓝牙主机-中心)</b>  <br/>
     <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/esp32_center_lora.jpg?raw=true' /> <br/>
-      epd47_blue_waker_center_weather的NB-IOT版本<br/>
+      epd47_blue_waker_center_weather的 NB-IOT版本, 用nb-iot网代替wifi网<br/>
       硬件组成：普通便宜的的ESP32开发板, DS3231时钟模块, Sim7020c模块 <br/>
-      当前仅实现了前一版本的2行文字信息的天气信息的功能 <br/>
       把NB-IOT当路由器使用，适合于仓库，家里或车上没有wifi网络，或公司里虽然有wifi,但各种上网验证，不适合单片机连接上网的场合。<br/>
       引脚连接:  <br/>
   ESP32 Sim7020c <br/> <br/>
