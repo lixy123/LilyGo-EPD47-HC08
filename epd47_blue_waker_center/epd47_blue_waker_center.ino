@@ -50,7 +50,7 @@ void loop()
     loop_work_time = millis() / 1000;
 
   //每n秒蓝牙发送一次
-  if (millis() / 1000 - loop_work_time > 20 || first_loop)
+  if (millis() / 1000 - loop_work_time > 60 || first_loop)
   {
     send_txt_cnt = send_txt_cnt + 1;
     first_loop = false;
