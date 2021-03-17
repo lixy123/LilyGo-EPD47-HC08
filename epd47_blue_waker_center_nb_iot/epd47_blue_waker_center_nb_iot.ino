@@ -1,9 +1,12 @@
 #include <HardwareSerial.h>
 #include "RTClib.h"
 #include "weather_seniverse_7020.h"
+#include "weather_multiday_7020.h"
 #include "ble_to_hc08.h"
 
 #define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
+
+bool have_pwd = false; //编译时用，是否有pwd引脚
 
 HardwareSerial mySerial(1);
 hw_timer_t *timer = NULL;
@@ -11,11 +14,28 @@ int loop_num = 0;
 RTC_DS3231 rtc;
 /*
   编译文件大小: 1.0M
+
+  1.虚拟串口使用的是9600,  sim7020需要提前用 AT+IPR=9600 命令将sim7020波特率改成9600
+  2.华丽版本天气获取的JSON数据长达5K,天气json解析需要较大内存。
+    最好用带psram的esp32,且编译时打开param:enabled,否则json解析天气会不稳定，
+    如果是无psram的esp32开发板，def_weather_time_table 变量赋值为空串，不要使用本功能
+    仅使用文本串显示天气。
+  3.表格版本天气因为传输数据多(约1KB)，蓝牙传输偶有发现丢失字符现象, 之前没用nb-iot时较少出现，怀疑nb-iot信号与蓝牙有干扰？
+  4. no-iot不如wifi稳定，查询天气会尝试3次，间隔1分钟。
+  
+  引脚连接:
+  ESP32 Sim7020c
+  5V    5v
+  GND   GND
+  12    TX
+  13    RX
+  15    PWD  (有些sim7020板没有PWD,则不用连接)
 */
 
-int led = 15;
+int boot_pin = 15;
 bool net_connect_succ = false;
 
+String waker_blue_machine = "34:14:b5:90:89:17";
 
 //上次返回天气时间，防止同一分钟多次获取时间
 String last_weather_show_time = "";
@@ -23,11 +43,15 @@ String last_weather_show_time_table = "";
 String last_wake_blue_time = "";
 
 //蓝牙发送接收因为信号问题，不能保证每次发送的天气都能被墨水屏接收到，可通过增加发送次数降低失败机率
-//定义几点几分返回天气的时间
-//def_weather_time 文本字串天气
-//def_weather_time_table 带表格显示多天的华丽版本天气
-String def_weather_time = "06:25;12:30;17:25";
-String def_weather_time_table = "";
+
+//1.定义返回天气的时间
+String def_weather_time = "06:10;18:20";
+//String def_weather_time = "13:30;14:30;15:00;16:00;17:25";
+
+//2.定义返回天气的时间(带表格显示多天的华丽版本天气)
+String def_weather_time_table = "06:45;18:55";
+
+//3.定义唤醒远程单片机的时间
 String def_wake_blue_time = "";  //考虑到蓝牙不稳定，未必连接正常，可间隔20分钟连续两次
 
 
@@ -36,7 +60,9 @@ char daysOfTheWeek[7][12] = {"星期日", "星期一", "星期二", "星期三",
 String g_ink_showtxt = "";
 
 
-String weather_data = "";
+String weather_data = "";      //文本串天气,简单字串天气显示用
+String weather_data_table = ""; //json格式的文本串天气,华丽表格天气显示用
+
 uint32_t check_down_time = 0; //每小时AT命令检查一次，如果sim7020关机，启动它
 
 String buff_split[10];
@@ -44,7 +70,10 @@ String buff_split[10];
 Manager_blue_to_hc08* objManager_blue_to_hc08;
 GetWeather* objGetWeather;
 cityWeather* objcityWeather;
+Weather_multidayManager * objWeather_multidayManager;
 
+int try_num_weather = 0;
+int try_num_weather_table = 0;
 
 String Get_ds3231_time()
 {
@@ -91,9 +120,8 @@ void rebootESP() {
   esp_restart();
 }
 
-String send_at_httpget(String p_char, int delay_sec) {
-  //char  j = 0;
-  //char ch;
+/*
+  String send_at_httpget(String p_char, int delay_sec) {
   String ret_str = "";
   String tmp_str = "";
   if (p_char.length() > 0)
@@ -121,8 +149,49 @@ String send_at_httpget(String p_char, int delay_sec) {
         ret_str = tmp_str;
       }
       else
-
         ret_str = ret_str + tmp_str;
+
+    }
+    delay(10);
+  }
+
+  return ret_str;
+  }
+*/
+
+String send_at_httpget(String p_char, int delay_sec) {
+  String ret_str = "";
+  String tmp_str = "";
+  if (p_char.length() > 0)
+  {
+    Serial.println(String("cmd=") + p_char);
+    mySerial.println(p_char);
+  }
+  ret_str = "";
+  mySerial.setTimeout(5000);
+  uint32_t start_time = millis() / 1000;
+  while (millis() / 1000 - start_time < delay_sec)
+  {
+
+    if (mySerial.available() > 0)
+    {
+      tmp_str = mySerial.readStringUntil('\n');
+      Serial.println(tmp_str);
+
+      //结束标志，退出
+      if (tmp_str.indexOf("+CHTTPERR: 0,-2") > -1) break;
+
+      //遇到这个标志，其它数据清除
+      if (tmp_str.indexOf("+CHTTPNMIC: 0,0,") > -1)
+      {
+        //Serial.println("&");
+        ret_str = ret_str + parse_CHTTPNMIC(tmp_str);
+      }
+      else if (tmp_str.indexOf("+CHTTPNMIC: 0,1,") > -1)
+      {
+        //Serial.println("&");
+        ret_str = ret_str + parse_CHTTPNMIC(tmp_str);
+      }
 
     }
     delay(10);
@@ -131,9 +200,9 @@ String send_at_httpget(String p_char, int delay_sec) {
   return ret_str;
 }
 
-
-String send_at(String p_char, String break_str, int delay_sec) {
-  char  j = 0;
+/*
+//不会因为readStringUntil 阻塞
+String send_at_old(String p_char, String break_str, int delay_sec) {
   char ch;
   String ret_str = "";
   if (p_char.length() > 0)
@@ -155,22 +224,21 @@ String send_at(String p_char, String break_str, int delay_sec) {
       {
         ch = mySerial.read();
         ret_str = ret_str + ch;
-        delay(10);
+        delay(5);
       }
       if (break_str.length() > 0 && ret_str.indexOf(break_str) > -1)
         break;
     }
-    delay(50);
+    delay(10);
   }
 
   return ret_str;
 }
+*/
 
-/*
-  readStringUntil 有阻塞，不好用
-  String send_at(String p_char, String break_str, int delay_sec) {
-  //char  j = 0;
-  //char ch;
+//readStringUntil 有阻塞，不好用
+String send_at(String p_char, String break_str, int delay_sec) {
+
   String ret_str = "";
   String tmp_str = "";
   if (p_char.length() > 0)
@@ -189,7 +257,7 @@ String send_at(String p_char, String break_str, int delay_sec) {
   {
     if (mySerial.available() > 0)
     {
-      Serial.println(".");
+      //Serial.println(".");
 
       //此句容易被阻塞
       tmp_str = mySerial.readStringUntil('\n');
@@ -200,10 +268,9 @@ String send_at(String p_char, String break_str, int delay_sec) {
     }
     delay(10);
   }
-  Serial.println("@");
   return ret_str;
-  }
-*/
+}
+
 
 
 //sec秒内不接收串口数据，并清缓存
@@ -225,26 +292,22 @@ void clear_uart(int ms_time)
       Serial.print(ch);
     }
     yield();
-    delay(5);
+    delay(10);
   }
 }
 
 void powerUp() {
-  Serial.println("powerUp");
-  digitalWrite(led, HIGH);
+  Serial.println("begin powerUp...");
   delay(2000);
-  digitalWrite(led, LOW);
+  digitalWrite(boot_pin, HIGH);
+  delay(2000);
+  digitalWrite(boot_pin, LOW);
 
-  delay(2000);
-  clear_uart(500);  //刚启动的数据无效，丢掉
+  clear_uart(10000);  //20秒内的数据丢掉 为确保启动后能执行AT检测启动
+  Serial.println("end powerUp...");
 }
 
-//void powerDown() {
-//  digitalWrite(led, HIGH);
-//  delay(2000);
-//  digitalWrite(led, LOW);
-//  delay(2000);
-//}
+
 
 void free_http()
 {
@@ -266,7 +329,7 @@ bool get_weather()
 
   String ret;
 
-  ret = send_at("AT+CHTTPCREATE=\"" + objGetWeather->req_host + "\"", "OK", 30);
+  ret = send_at("AT+CHTTPCREATE=\"" + objGetWeather->req_host + "\"", "+CHTTPCREATE: 0", 30);
   Serial.println("ret=" + ret);
   if (not (ret.indexOf("+CHTTPCREATE: 0") > -1))
     return false;
@@ -282,13 +345,51 @@ bool get_weather()
   Serial.println(">>> 连接 http  ok ...");
 
   delay(200);
-  ret = send_at_httpget("AT+CHTTPSEND=0,0,\"" + objGetWeather->req_url + "\"", 30);
-  Serial.println("ret=" + ret);
-  if (ret.indexOf("+CHTTPNMIC:") > -1 and ret.length() > 10)
+  //最长60秒内获得数据
+  ret = send_at_httpget("AT+CHTTPSEND=0,0,\"" + objGetWeather->req_url + "\"", 60);
+  //Serial.println("ret=" + ret);
+  if (ret.length() > 10)
   {
     succ_flag = true;
-    weather_data = parse_CHTTPNMIC(ret);
+    weather_data = ret;
     Serial.println("weather_data=" + weather_data);
+  }
+
+  return succ_flag;
+}
+
+
+//获得天气，表格版
+bool get_weather_table()
+{
+  bool succ_flag = false;
+
+  String ret;
+
+  ret = send_at("AT+CHTTPCREATE=\"" + objWeather_multidayManager->req_host + "\"", "+CHTTPCREATE: 0", 30);
+  Serial.println("ret=" + ret);
+  if (not (ret.indexOf("+CHTTPCREATE: 0") > -1))
+    return false;
+
+  Serial.println(">>> 创建HTTP Host ok ...");
+  delay(200);
+
+  ret = send_at("AT+CHTTPCON=0", "OK", 30);
+  Serial.println("ret=" + ret);
+  if (not (ret.indexOf("OK") > -1))
+    return false;
+
+  Serial.println(">>> 连接 http  ok ...");
+
+  delay(200);
+  //最长120秒内获得数据
+  ret = send_at_httpget("AT+CHTTPSEND=0,0,\"" + objWeather_multidayManager->req_url + "\"", 120);
+  //Serial.println("ret=" + ret);
+  if  (ret.length() > 100)
+  {
+    succ_flag = true;
+    weather_data_table = ret;
+    Serial.println("weather_data_table=" + weather_data_table);
   }
 
   return succ_flag;
@@ -577,13 +678,15 @@ void setup() {
   timerAlarmEnable(timer);
 
   // 初始化时钟模块
+  // 判断不出是否连接时钟模块，如果不连接，也返回True
+  // 可通过返回的时间的有效性判断！
   if (! rtc.begin()) {
     Serial.println("Couldn't find RTC");
     rebootESP();
   }
 
-  pinMode(led, OUTPUT);
-  digitalWrite(led, LOW);
+  pinMode(boot_pin, OUTPUT);
+  digitalWrite(boot_pin, LOW);
   Serial.println("boot ...");
 
   //10秒时间是等待主控初始化
@@ -595,8 +698,10 @@ void setup() {
 
   Serial.println(">>> 开启 nb-iot ...");
 
-  //通过AT命令，检查是否未开机，如果关机，自动打开
-  waker_7020();
+  //如果有pwd引脚
+  if (have_pwd)
+    //通过AT命令，检查是否未开机，如果关机，自动打开
+    waker_7020();
 
   delay(10000);  //等待一会，确保网络连接上
 
@@ -610,8 +715,12 @@ void setup() {
   objManager_blue_to_hc08 = new Manager_blue_to_hc08();
   objGetWeather = new GetWeather();
   objcityWeather = new cityWeather();
+  objWeather_multidayManager = new Weather_multidayManager;
+
   g_ink_showtxt = "";
   loop_num = 0;
+  try_num_weather = 1; //开机后获取天气到墨水屏
+  try_num_weather_table = 0; //开机后获取天气到墨水屏
 }
 
 
@@ -658,10 +767,62 @@ void loop() {
 
   if (net_connect_succ )
   {
-    //是否在设定时间
-    String weather_time = Get_ds3231_time_weather(1);
-    if (last_weather_show_time != Get_ds3231_time_weather(2) and  def_weather_time.indexOf(weather_time) > -1)
+
+    //前一次获取天气不成功，可再试2次
+    if (try_num_weather > 0)
     {
+      Serial.println("上次获取天气不成功，还有" + String(try_num_weather) + "次尝试机会...");
+      try_num_weather = try_num_weather - 1;
+      bool weatherok = get_weather();
+      //释放获取天气时创建的资源，必须要！
+      free_http();
+      if (weatherok)
+      {
+        int http_code = objGetWeather->getnow_weather_7020(weather_data, objcityWeather);
+        if (http_code == 0)
+        {
+          String weather_info  = objcityWeather->toString() ;
+          g_ink_showtxt = Get_ds3231_time_weather(3) + " " + weather_info + " " + Get_ds3231_time_weather(1);
+          last_weather_show_time = Get_ds3231_time_weather(2);
+          try_num_weather = 0;
+        }
+      }
+      //如果没成功获取天气，下一分钟再试
+      if (try_num_weather > 0)
+        delay(60000);
+    }
+
+
+    //前一次获取天气不成功，可再试2次
+    if (try_num_weather_table > 0)
+    {
+      Serial.println("上次获取天气不成功，还有" + String(try_num_weather_table) + "次尝试机会...");
+      try_num_weather_table = try_num_weather_table - 1;
+      //不能保证每次都能获取到天气数据！
+      bool weatherok = get_weather_table();
+      //释放获取天气时创建的资源，必须要！
+      free_http();
+      if (weatherok)
+      {
+        int http_code = objWeather_multidayManager->getnow_weather_7020(weather_data_table);
+        if (http_code == 0)
+        {
+          g_ink_showtxt = objWeather_multidayManager->resp_new;
+          last_weather_show_time_table = Get_ds3231_time_weather(2);
+          try_num_weather_table = 0;
+        }
+      }
+      //如果没成功获取天气，下一分钟再试
+      if (try_num_weather_table > 0)
+        delay(60000);
+    }
+
+
+    //1.是否在设定时间
+    String weather_time = Get_ds3231_time_weather(1);
+    if (try_num_weather == 0 and last_weather_show_time != Get_ds3231_time_weather(2) and  def_weather_time.indexOf(weather_time) > -1)
+    {
+      try_num_weather = 2; //最多允许试3次.
       //不能保证每次都能获取到天气数据！
       bool weatherok = get_weather();
       //释放获取天气时创建的资源，必须要！
@@ -676,11 +837,56 @@ void loop() {
 
           //记录上一次日期
           last_weather_show_time = Get_ds3231_time_weather(2);
+          try_num_weather = 0;
         }
-
       }
 
+      //如果没成功获取天气，下一分钟再试
+      if (try_num_weather > 0)
+        delay(60000);
     }
+
+
+    //2 判断是否在设定"小时:分钟"时间，返回信息设置为当前天气_表格版
+    weather_time = Get_ds3231_time_weather(1);
+    if (last_weather_show_time_table != Get_ds3231_time_weather(2) and  def_weather_time_table.indexOf(weather_time) > -1)
+    {
+      try_num_weather_table = 2; //最多允许试3次.
+      //不能保证每次都能获取到天气数据！
+      bool weatherok = get_weather_table();
+      //释放获取天气时创建的资源，必须要！
+      free_http();
+      if (weatherok)
+      {
+        int http_code = objWeather_multidayManager->getnow_weather_7020(weather_data_table);
+        if (http_code == 0)
+        {
+          g_ink_showtxt = objWeather_multidayManager->resp_new;
+          last_weather_show_time_table = Get_ds3231_time_weather(2);
+          try_num_weather_table = 0;
+        }
+      }
+
+      //如果没成功获取天气，下一分钟再试
+      if (try_num_weather_table > 0)
+        delay(60000);
+    }
+
+
+    //3 判断是否在设定"小时:分钟"时间，唤醒远程hc08的蓝牙设备
+    //目前只有一台蓝牙设备需要唤醒，可考虑增加多台的情况。。。
+    //目前设计被唤醒的设备是树莓派，hc08的蓝牙的state引脚通过继电器，
+    //当hc08蓝牙设备被连接，蓝牙设备的引脚state为高电平，触发继电器让树莓派上的GPIO03与GND短接，从而遥控树莓派开机
+    //树莓派用电量约300ma,平时接市电，用电极少，目的不是为了省电，是为了减少树莓派SD卡磨损
+    weather_time = Get_ds3231_time_weather(1);
+    if (last_wake_blue_time != Get_ds3231_time_weather(2) and  def_wake_blue_time.indexOf(weather_time) > -1)
+    {
+      //最长蓝牙扫描时间60秒,连接上蓝牙后停顿1秒
+      objManager_blue_to_hc08->waker_remote_blue(waker_blue_machine, 60, 1);
+      delay(5000);
+      last_wake_blue_time = Get_ds3231_time_weather(2);
+    }
+
 
     if (g_ink_showtxt.length() > 0)
     {
