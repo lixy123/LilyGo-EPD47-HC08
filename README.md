@@ -73,9 +73,9 @@ https://github.com/ivanseidel/LinkedList<br/>
 
   <b> 4.epd47_blue_waker_center_nb_iot (蓝牙主机-中心)</b>    
       epd47_blue_waker_center_weather的 NB-IOT版本, 用nb-iot网代替wifi网<br/>
-      硬件组成：
-      A.普通ESP32开发板
-      B.DS3231时钟模块, 
+      硬件组成：<br/>
+      A.普通ESP32开发板<br/>
+      B.DS3231时钟模块 <br/>
       C.Sim7020c模块 <br/>
       把NB-IOT当路由器使用，适合于仓库，家里或车上没有wifi网络，或公司里虽然有wifi,但各种上网验证，不适合单片机连接上网的场合。<br/>
       引脚连接:  <br/>
@@ -84,8 +84,7 @@ https://github.com/ivanseidel/LinkedList<br/>
   GND   GND <br/>
   12    TX <br/>
   13    RX <br/>
-  15    RESET <br/> (注：仅用于sim7020复位，不用能用开，关sim7020) 
-<br/>
+  15    RESET  (注：仅用于sim7020复位，不用能用开，关sim7020) <br/>
       通过插线板供电,如电池供电支持不了1天<br/>
       注： 如果未来需求仅仅是在固定时间点获取天气并显示到墨水屏，ESP32不适合找到插线板供电(例如车内)，有如下2改进方案：<br/>
       1.本套硬件的代码增加休眠节能, ESP32不用时休眠，sim7020不用时关闭，最多电流可优化到7ma左右, 可初步做到电池供电<br/>
