@@ -6,7 +6,7 @@
 
 #define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
 
-bool have_pwd = false; //编译时用，是否有pwd引脚
+int reset_pin=15;
 
 HardwareSerial mySerial(1);
 hw_timer_t *timer = NULL;
@@ -22,17 +22,17 @@ RTC_DS3231 rtc;
     仅使用文本串显示天气。
   3.表格版本天气因为传输数据多(约1KB)，蓝牙传输偶有发现丢失字符现象, 之前没用nb-iot时较少出现，怀疑nb-iot信号与蓝牙有干扰？
   4. no-iot不如wifi稳定，查询天气会尝试3次，间隔1分钟。
-  
+
   引脚连接:
   ESP32 Sim7020c
   5V    5v
   GND   GND
   12    TX
   13    RX
-  15    PWD  (有些sim7020板没有PWD,则不用连接)
+  15    RESET (用于拉低引脚复位）
 */
 
-int boot_pin = 15;
+
 bool net_connect_succ = false;
 
 String waker_blue_machine = "34:14:b5:90:89:17";
@@ -201,8 +201,8 @@ String send_at_httpget(String p_char, int delay_sec) {
 }
 
 /*
-//不会因为readStringUntil 阻塞
-String send_at_old(String p_char, String break_str, int delay_sec) {
+  //不会因为readStringUntil 阻塞
+  String send_at_old(String p_char, String break_str, int delay_sec) {
   char ch;
   String ret_str = "";
   if (p_char.length() > 0)
@@ -233,10 +233,10 @@ String send_at_old(String p_char, String break_str, int delay_sec) {
   }
 
   return ret_str;
-}
+  }
 */
 
-//readStringUntil 有阻塞，不好用
+//要防止readStringUntil阻塞，确认有新数据再调用此函数
 String send_at(String p_char, String break_str, int delay_sec) {
 
   String ret_str = "";
@@ -271,7 +271,15 @@ String send_at(String p_char, String break_str, int delay_sec) {
   return ret_str;
 }
 
-
+//重启7020
+void reset_7020()
+{
+  digitalWrite(reset_pin, LOW);
+  delay(1000);
+  digitalWrite(reset_pin, HIGH);
+  Serial.println("reset_7020...");
+  clear_uart(20000);
+}
 
 //sec秒内不接收串口数据，并清缓存
 void clear_uart(int ms_time)
@@ -294,17 +302,6 @@ void clear_uart(int ms_time)
     yield();
     delay(10);
   }
-}
-
-void powerUp() {
-  Serial.println("begin powerUp...");
-  delay(2000);
-  digitalWrite(boot_pin, HIGH);
-  delay(2000);
-  digitalWrite(boot_pin, LOW);
-
-  clear_uart(10000);  //20秒内的数据丢掉 为确保启动后能执行AT检测启动
-  Serial.println("end powerUp...");
 }
 
 
@@ -441,30 +438,6 @@ bool check_waker_7020()
   return check_ok;
 }
 
-void waker_7020()
-{
-  String ret = "";
-  delay(1000);
-  //通过AT命令
-  while (true)
-  {
-    ret = send_at("AT", "", 2);
-
-    Serial.println("ret=" + ret);
-
-    //返回数据中无OK
-    //则判断为关机状态，进行开机
-    if ( ret.indexOf("OK") > -1)
-      break;
-    else
-    {
-      //Serial.println("powerUp");
-      powerUp();
-    }
-    delay(2000);
-  }
-  Serial.println(">>> AT ok ...");
-}
 
 bool connect_nb()
 {
@@ -667,6 +640,9 @@ void setup() {
   //                               RX, TX
   mySerial.begin(9600, SERIAL_8N1, 12, 13);
 
+  pinMode(reset_pin, OUTPUT);
+  digitalWrite(reset_pin, HIGH);
+  
   //为防意外，n秒后强制复位重启，一般用不到。。。
   //n秒如果任务处理不完，看门狗会让esp32自动重启,防止程序跑死...
   //如果串口有新数据，时间会重新计算
@@ -685,8 +661,6 @@ void setup() {
     rebootESP();
   }
 
-  pinMode(boot_pin, OUTPUT);
-  digitalWrite(boot_pin, LOW);
   Serial.println("boot ...");
 
   //10秒时间是等待主控初始化
@@ -698,10 +672,6 @@ void setup() {
 
   Serial.println(">>> 开启 nb-iot ...");
 
-  //如果有pwd引脚
-  if (have_pwd)
-    //通过AT命令，检查是否未开机，如果关机，自动打开
-    waker_7020();
 
   delay(10000);  //等待一会，确保网络连接上
 
@@ -755,8 +725,8 @@ void loop() {
   {
     if (check_waker_7020() == false)
     {
-      Serial.println("AT 命令不响应，开启sim7020");
-      powerUp();
+      Serial.println("AT 命令不响应，reset sim7020");
+      reset_7020();
       net_connect_succ = false;
     }
 
