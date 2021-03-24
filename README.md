@@ -71,7 +71,7 @@ https://github.com/ivanseidel/LinkedList<br/>
      设计成插线板供电,不适合电池供电, 普通电池支持不了1-2天<br/>
    注:与lilygo-epd47墨水屏配合使用,一个发,一个收.<br/>
 
-  <b> 4.epd47_blue_waker_center_nb_iot (蓝牙主机-中心)</b>  <br/>   
+  <b> 4.epd47_blue_waker_center_nb_iot (蓝牙主机-中心)</b>    
       epd47_blue_waker_center_weather的 NB-IOT版本, 用nb-iot网代替wifi网<br/>
       硬件组成：
       A.普通ESP32开发板
