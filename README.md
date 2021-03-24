@@ -71,10 +71,12 @@ https://github.com/ivanseidel/LinkedList<br/>
      设计成插线板供电,不适合电池供电, 普通电池支持不了1-2天<br/>
    注:与lilygo-epd47墨水屏配合使用,一个发,一个收.<br/>
 
-  <b> 4.epd47_blue_waker_center_nb_iot (蓝牙主机-中心)</b>  <br/>
-    <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/esp32_center_lora.jpg?raw=true' /> <br/>
+  <b> 4.epd47_blue_waker_center_nb_iot (蓝牙主机-中心)</b>  <br/>   
       epd47_blue_waker_center_weather的 NB-IOT版本, 用nb-iot网代替wifi网<br/>
-      硬件组成：普通便宜的的ESP32开发板, DS3231时钟模块, Sim7020c模块 <br/>
+      硬件组成：
+      A.普通ESP32开发板
+      B.DS3231时钟模块, 
+      C.Sim7020c模块 <br/>
       把NB-IOT当路由器使用，适合于仓库，家里或车上没有wifi网络，或公司里虽然有wifi,但各种上网验证，不适合单片机连接上网的场合。<br/>
       引脚连接:  <br/>
   ESP32 Sim7020c <br/> 
@@ -82,13 +84,13 @@ https://github.com/ivanseidel/LinkedList<br/>
   GND   GND <br/>
   12    TX <br/>
   13    RX <br/>
-  15    PWD  (有些sim7020板没有PWD,可不连) 
+  15    RESET <br/> (注：仅用于sim7020复位，不用能用开，关sim7020) 
 <br/>
       通过插线板供电,如电池供电支持不了1天<br/>
-      注： 如果未来需求无扩充，仅仅是在固定时间点获取天气并显示到墨水屏，有如下2改进方案：<br/>
-      1.本套硬件的代码增加休眠节能, 不需常年连接市电. 可做到电池供电，3-6个月充电一次<br/>
-      2.将本代码与epd47_blue_waker代码硬件软件合一，省去本套硬件，ds3231,sim7020c连接到墨水屏上，sim7020c定时唤醒取数据，能达到1-3个月充电一次目标. <br/>
-      都是一种不错的选择。.<br/>
+      注： 如果未来需求仅仅是在固定时间点获取天气并显示到墨水屏，ESP32不适合找到插线板供电(例如车内)，有如下2改进方案：<br/>
+      1.本套硬件的代码增加休眠节能, ESP32不用时休眠，sim7020不用时关闭，最多电流可优化到7ma左右, 可初步做到电池供电<br/>
+      2.将本代码与epd47_blue_waker代码硬件软件合一，省去本套硬件，ds3231,sim7020c连接到墨水屏上，因为用电设备多，勉强能0.5-1个月充电一次 <br/>
+      都是一种不错的选择 <br/>
 
   <b> 5.t-watch2020-v3_mic_blue (t-watch2020 v3带麦克风版本) </b>  <br/>
      lilygo 电话手表通过调用百度服务将语音转文字，通过蓝牙发送文字到墨水屏显示<br/>
