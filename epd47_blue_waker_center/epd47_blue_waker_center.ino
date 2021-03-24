@@ -22,22 +22,27 @@ void setup() {
   //WiFi.mode(WIFI_OFF)
   send_txt_cnt = 0;
 
+Serial.println("setup");
+
   //为防意外，n秒后强制复位重启，一般用不到。。。
   //n秒如果任务处理不完，看门狗会让esp32自动重启,防止程序跑死...
-  //如果串口有新数据，时间会重新计算
-  int wdtTimeout = 5 * 60 * 1000; //设置n分钟 watchdog
+  //esp32蓝牙库有bug,当蓝牙信息不稳定时，在蓝牙连接过程中有一定机率堵塞，需要借助此处的dog进行复位
+  int wdtTimeout = 10 * 60 * 1000; //设置n分钟 watchdog
 
   timer = timerBegin(0, 80, true);                  //timer 0, div 80
   timerAttachInterrupt(timer, &resetModule, true);  //attach callback
   timerAlarmWrite(timer, wdtTimeout * 1000 , false); //set time in us
-  //timerAlarmEnable(timer);                          //enable interrupt
+  timerAlarmEnable(timer);                          //enable interrupt
   //timerAlarmDisable(timer);
-  timerAlarmDisable(timer);
+  
 
   objManager_blue_to_hc08 = new Manager_blue_to_hc08();
 
 
   loop_work_time = millis() / 1000;
+  delay(5000);
+
+  Serial.println("start");
 }
 
 
@@ -48,7 +53,9 @@ void loop()
 {
   if ( millis() / 1000 < loop_work_time)
     loop_work_time = millis() / 1000;
-
+    
+  delay(1000);
+  
   //每n秒蓝牙发送一次
   if (millis() / 1000 - loop_work_time > 60 || first_loop)
   {

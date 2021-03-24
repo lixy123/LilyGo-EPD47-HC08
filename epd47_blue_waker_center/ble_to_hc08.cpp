@@ -9,7 +9,7 @@ int blue_cmd_state = 0;    //全局共享蓝牙命令处理状态
 bool blue_connected = false;
 
 bool blue_doConnect = false;
-char * blue_name = "edp47_ink";   //首次扫描时能扫描出其蓝牙地址+蓝牙名称，再次扫描蓝牙地址会扫描不出
+char * blue_name = "INK_047";   //首次扫描时能扫描出其蓝牙地址+蓝牙名称，再次扫描蓝牙地址会扫描不出
 //char * blue_name = "HC-42";   //首次扫描时能扫描出其蓝牙地址+蓝牙名称，再次扫描蓝牙地址会扫描不出
 
 String  blue_server_address = "";  //所以将首次扫描记忆的蓝牙地址记忆下，供下次扫描时匹配用
