@@ -384,7 +384,9 @@ void goto_sleep()
 
   //只能使用RTC功能的GPIO：0，2，4，12-15，25-27，32-39
   //唤醒后n秒进入休眠
-  esp_sleep_enable_ext0_wakeup(GPIO_NUM_12, 0);
+  //esp_sleep_enable_ext0_wakeup(GPIO_NUM_12, 0);
+  esp_sleep_enable_ext0_wakeup(GPIO_NUM_14, 0);
+  
   //第一个参数：RTCIO的编号
   //第二个参数：是高电平唤醒还是低电平唤
   //esp_sleep_enable_ext0_wakeup(GPIO_NUM_14, 0);
@@ -458,7 +460,8 @@ void setup() {
   }
 
   //                               RX, TX
-  MySerial.begin(9600, SERIAL_8N1, 12, 13);
+  //MySerial.begin(9600, SERIAL_8N1, 12, 13);
+  MySerial.begin(9600, SERIAL_8N1, 14, 15);
 
   //蓝牙串口唤醒的字串不能直接用，前面几个字节的数据会乱码，需要丢掉
   //需要约定，先随意发一串数据，过>300ms后再正式发送信息
@@ -467,12 +470,18 @@ void setup() {
   Serial.println("start");
 
 
+//  delay(2000);
+//  MySerial.write("AT+LED=0");
+//  clear_uart(1000);
 
   //首次上电或按RetSet,进入深度休眠， 局开
   //方便客户端使用，1.唤醒。 2.发送数据
+  //if (wakeup_reason != ESP_SLEEP_WAKEUP_EXT0)
+  Serial.println("wakeup_reason=" + String(wakeup_reason));
+   
   if (wakeup_reason != ESP_SLEEP_WAKEUP_EXT0)
   {
-    Serial.println("wakeup_reason=" + String(wakeup_reason));
+   
     delay(100);
     goto_sleep();
   }
