@@ -58,20 +58,20 @@ https://github.com/ivanseidel/LinkedList<br/>
    
   <b> 3.epd47_blue_waker_center_weather (蓝牙主机-中心)</b>  <br/>
    <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/esp32_center.jpg?raw=true' /> <br/>
-    3.1硬件组成： <br/>
+     <b>3.1硬件组成：</b> <br/>
      A.ESP32开发板(建议带psram) <br/>
      B.DS3231时钟模块 <br/>
-    3.2 技术说明: <br/>
+     <b>3.2 技术说明:</b> <br/>
      每天设置2次在设定时间wifi获取天气, 将天气预报通过esp32内置蓝牙功能推送至墨水屏并显示<br/>
      通过wifi除了获取天气信息，还可获取万年历，日期节日，记事提醒等文字，待发挥。<br/>
      config.h 需要配置心知天气key,极速天气key ,注册方式见config.h的说明<br/>
      心知天气用的免费版本，不限次，只适合发送一串文字信息，混在提醒记事文本串中，显示较简陋。<br/>
      极速天气可展示多天天气，表格状，界面华丽，使用其API需要给天气供应商付费 <br/>
-    3.3 已实现功能 <br/>
+     <b>3.3 已实现功能:</b> <br/>
      目前实现有如下三种信息推送至墨水屏:<br/>
-     3.1 2行文字信息的天气信息<br/>
-     3.2 华丽表格版本的天气信息，共显示5天天气。<br/>
-     3.3 将连接有HC08的机器唤醒。原理是待连接的HC08与继电器相连触发远程设备开机引脚(例如树莓派)或供电，以达到节电等目的。<br/>
+     A. 2行文字信息的天气信息<br/>
+     B. 华丽表格版本的天气信息，共显示5天天气。<br/>
+     C. 将连接有HC08的机器唤醒。原理是待连接的HC08与继电器相连触发远程设备开机引脚(例如树莓派)或供电，以达到节电等目的。<br/>
      设计成插线板供电,不适合电池供电, 普通电池支持不了1-2天<br/>
    注:与lilygo-epd47墨水屏配合使用,一个发,一个收.<br/>
 
@@ -79,25 +79,25 @@ https://github.com/ivanseidel/LinkedList<br/>
     <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/sim7020-2.jpg?raw=true' /> <br/>
     <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/sim7020-1.jpg?raw=true' /> <br/>
       epd47_blue_waker_center_weather的 NB-IOT版本, 用nb-iot网代替wifi网<br/>
-      4.1 硬件组成：<br/>
+     <b> 4.1 硬件组成：</b><br/>
       A.ESP32开发板(建议带psram)<br/>
       B.DS3231时钟模块 <br/>
       C.Sim7020c模块 <br/>
       把NB-IOT当路由器使用，适合于仓库，家里或车上没有wifi网络，或公司里虽然有wifi,但各种上网验证，不适合单片机连接上网的场合。<br/>
-      4.2 引脚连接:  <br/>
+     <b> 4.2 引脚连接:</b>  <br/>
   ESP32 Sim7020c <br/> 
   5V    5v <br/>
   GND   GND <br/>
   12    TX <br/>
   13    RX <br/>
   15    RESET  (注：仅用于sim7020复位，不用能用开，关sim7020) <br/>
-     4.3 技术说明: <br/>
+    <b> 4.3 技术说明: </b><br/>
       通过插线板供电,如电池供电支持不了1天<br/>
       注： 如果未来需求仅仅是在固定时间点获取天气并显示到墨水屏，ESP32不适合找到插线板供电(例如车内)，有如下2改进方案：<br/>
       1.本套硬件的代码增加休眠节能, ESP32不用时休眠，sim7020不用时关闭，最多电流可优化到7ma左右, 可初步做到电池供电<br/>
       2.将本代码与epd47_blue_waker代码硬件软件合一，省去本套硬件，ds3231,sim7020c连接到墨水屏上，因为用电设备多，勉强能0.5-1个月充电一次 <br/>
       都是一种不错的选择 <br/>
-  4.4 商务前景:<br/>
+  <b>4.4 商务前景:</b><br/>
   <一>特点:<br/>
   1.整体低耗能电池供电: <br/>
      解决随处摆放,低频次,随时得到信息的痛点<br/>
