@@ -58,7 +58,7 @@ https://github.com/ivanseidel/LinkedList<br/>
    
   <b> 3.epd47_blue_waker_center_weather (蓝牙主机-中心)</b>  <br/>
    <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/esp32_center.jpg?raw=true' /> <br/>
-     <b>3.1硬件组成：</b> <br/>
+     <b>3.1 硬件组成：</b> <br/>
      A.ESP32开发板(建议带psram) <br/>
      B.DS3231时钟模块 <br/>
      <b>3.2 技术说明:</b> <br/>
@@ -91,7 +91,7 @@ https://github.com/ivanseidel/LinkedList<br/>
   12    TX <br/>
   13    RX <br/>
   15    RESET  (注：仅用于sim7020复位，不用能用开，关sim7020) <br/>
-    <b> 4.3 技术说明: </b><br/>
+  <b> 4.3 技术说明: </b><br/>
       通过插线板供电,如电池供电支持不了1天<br/>
       注： 如果未来需求仅仅是在固定时间点获取天气并显示到墨水屏，ESP32不适合找到插线板供电(例如车内)，有如下2改进方案：<br/>
       1.本套硬件的代码增加休眠节能, ESP32不用时休眠，sim7020不用时关闭，最多电流可优化到7ma左右, 可初步做到电池供电<br/>
@@ -109,9 +109,9 @@ https://github.com/ivanseidel/LinkedList<br/>
    1.考虑到成本最低约300左右,适合商务礼品.<br/>
    2.也适合技客玩家<br/>
   <三>现存问题: <br/>
-   1. 外形不够简约,大气,需重构.<br/>
-   2.nb-iot网可能仅能在某些城市可用, 可能不能全国适用. <br/>
-   3.代码待磨合<br/>
+1. 外形不够简约,大气,需重构.<br/>
+2.nb-iot网可能仅能在某些城市可用, 可能不适合全国.<br/>
+3.代码待磨合.<br/>
 
   <b> 5.t-watch2020-v3_mic_blue (t-watch2020 v3带麦克风版本) </b>  <br/>
      lilygo 电话手表通过调用百度服务将语音转文字，通过蓝牙发送文字到墨水屏显示<br/>
