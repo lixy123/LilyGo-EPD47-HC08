@@ -72,6 +72,8 @@ https://github.com/ivanseidel/LinkedList<br/>
    注:与lilygo-epd47墨水屏配合使用,一个发,一个收.<br/>
 
   <b> 4.epd47_blue_waker_center_nb_iot (蓝牙主机-中心)</b>    
+   <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/sim7020-2.jpg?raw=true' /> <br/>
+    <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/sim7020-1.jpg?raw=true' /> <br/>
       epd47_blue_waker_center_weather的 NB-IOT版本, 用nb-iot网代替wifi网<br/>
       硬件组成：<br/>
       A.普通ESP32开发板<br/>
@@ -90,6 +92,21 @@ https://github.com/ivanseidel/LinkedList<br/>
       1.本套硬件的代码增加休眠节能, ESP32不用时休眠，sim7020不用时关闭，最多电流可优化到7ma左右, 可初步做到电池供电<br/>
       2.将本代码与epd47_blue_waker代码硬件软件合一，省去本套硬件，ds3231,sim7020c连接到墨水屏上，因为用电设备多，勉强能0.5-1个月充电一次 <br/>
       都是一种不错的选择 <br/>
+  补充几句:<br/>
+  <一>特点:<br/>
+  1.整体低耗能电池供电: <br/>
+     解决随处摆放,低频次,随时得到信息的痛点<br/>
+  2.低配版NB-IOT路由器:  <br/>
+     解决一般的wifi连接路由器配置繁琐,甚至无网可用,有网不能连接的痛点,(例如车上，家里无宽带独居老人)<br/>
+  3.特别是独居老人,车内场景<br/>
+     给其建立了用最低成本的发出信息,收到信息的机会通道.<br/>
+  <二>定位<br/>
+   1.考虑到成本最低约300左右,适合商务礼品.<br/>
+   2.也适合技客玩家<br/>
+  <三>现存问题: <br/>
+   1. 外形不够简约,大气,需重构.<br/>
+   2.nb-iot网可能仅能在某些城市可用, 可能不能全国适用. <br/>
+   3.代码待磨合<br/>
 
   <b> 5.t-watch2020-v3_mic_blue (t-watch2020 v3带麦克风版本) </b>  <br/>
      lilygo 电话手表通过调用百度服务将语音转文字，通过蓝牙发送文字到墨水屏显示<br/>
