@@ -11,7 +11,7 @@ LilyGo-EPD47 利用hc08蓝牙硬件实现平时休眠节能，随时按需唤醒
     5.1 休眠时整体电流<1ma <br/>
     5.2 唤醒时间<1秒 <br/>
     5.3 lilygo-epd47墨水屏每天唤醒并显示3次天气信息，平时偶尔有零星文字提醒记事显示， 普通的18650电池能支持墨水屏约1-3个月<br/>
-6.关于唤醒硬件选择,尝试过lora, nb-iot, 其中nb-iot模块自身闲时电流约在6-8ma, 相对hc08蓝牙闲时电流(时间均滩<0.3ma)显得过大,后放弃.<br/>
+6.关于唤醒硬件选择,尝试过lora, nb-iot, 其中nb-iot模块关闭节能约1ma, 相对hc08蓝牙闲时电流(时间均滩<0.3ma)显得过大,不适合直接连接到墨水屏,但可做到发送器上.<br/>
 
 <b>二.硬件需求：</b><br/>
 1.lilygo-epd47 电池供电, HC08蓝牙设备, 随时接收文字信息并显示的屏<br/>
@@ -33,7 +33,7 @@ LilyGo-EPD47 利用hc08蓝牙硬件实现平时休眠节能，随时按需唤醒
     AT+NAME=INK_047  //修改蓝牙名称，用于客户端查找蓝牙用<br/>
     AT+LED=0          //关闭led灯，省电<br/>
     
-2.普通ESP32, 用于给前一设备信息推送<br/>
+2.ESP32(建议带psram), 用于给前一设备信息推送<br/>
   3.1 没啥讲究,普通的ESP32芯片。<br/>
   3.2 如果后期想搞语音转文字高级功能，需要ESP32带PSRAM的版本, 最好集成MIC, t-watch系列本质上是将ESP32加上了一些外设进行了高度集成。<br/>  
 3.树莓派 (待扩充) <br/>
@@ -58,12 +58,16 @@ https://github.com/ivanseidel/LinkedList<br/>
    
   <b> 3.epd47_blue_waker_center_weather (蓝牙主机-中心)</b>  <br/>
    <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/esp32_center.jpg?raw=true' /> <br/>
-     硬件组成：普通便宜的的ESP32开发板, DS3231时钟模块 <br/>
-     根据代码编写可每天2-3次在设定时间wifi获取天气后将天气预报用蓝牙推送至墨水屏供显示的示例代码。<br/>
+    3.1硬件组成： <br/>
+     A.ESP32开发板(建议带psram) <br/>
+     B.DS3231时钟模块 <br/>
+    3.2 技术说明: <br/>
+     每天设置2次在设定时间wifi获取天气, 将天气预报通过esp32内置蓝牙功能推送至墨水屏并显示<br/>
      通过wifi除了获取天气信息，还可获取万年历，日期节日，记事提醒等文字，待发挥。<br/>
      config.h 需要配置心知天气key,极速天气key ,注册方式见config.h的说明<br/>
      心知天气用的免费版本，不限次，只适合发送一串文字信息，混在提醒记事文本串中，显示较简陋。<br/>
      极速天气可展示多天天气，表格状，界面华丽，使用其API需要给天气供应商付费 <br/>
+    3.3 已实现功能 <br/>
      目前实现有如下三种信息推送至墨水屏:<br/>
      3.1 2行文字信息的天气信息<br/>
      3.2 华丽表格版本的天气信息，共显示5天天气。<br/>
@@ -72,27 +76,28 @@ https://github.com/ivanseidel/LinkedList<br/>
    注:与lilygo-epd47墨水屏配合使用,一个发,一个收.<br/>
 
   <b> 4.epd47_blue_waker_center_nb_iot (蓝牙主机-中心-NB-IOT版本)</b>    
-   <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/sim7020-2.jpg?raw=true' /> <br/>
+    <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/sim7020-2.jpg?raw=true' /> <br/>
     <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/sim7020-1.jpg?raw=true' /> <br/>
       epd47_blue_waker_center_weather的 NB-IOT版本, 用nb-iot网代替wifi网<br/>
-      硬件组成：<br/>
-      A.普通ESP32开发板<br/>
+      4.1 硬件组成：<br/>
+      A.ESP32开发板(建议带psram)<br/>
       B.DS3231时钟模块 <br/>
       C.Sim7020c模块 <br/>
       把NB-IOT当路由器使用，适合于仓库，家里或车上没有wifi网络，或公司里虽然有wifi,但各种上网验证，不适合单片机连接上网的场合。<br/>
-      引脚连接:  <br/>
+      4.2 引脚连接:  <br/>
   ESP32 Sim7020c <br/> 
   5V    5v <br/>
   GND   GND <br/>
   12    TX <br/>
   13    RX <br/>
   15    RESET  (注：仅用于sim7020复位，不用能用开，关sim7020) <br/>
+     4.3 技术说明: <br/>
       通过插线板供电,如电池供电支持不了1天<br/>
       注： 如果未来需求仅仅是在固定时间点获取天气并显示到墨水屏，ESP32不适合找到插线板供电(例如车内)，有如下2改进方案：<br/>
       1.本套硬件的代码增加休眠节能, ESP32不用时休眠，sim7020不用时关闭，最多电流可优化到7ma左右, 可初步做到电池供电<br/>
       2.将本代码与epd47_blue_waker代码硬件软件合一，省去本套硬件，ds3231,sim7020c连接到墨水屏上，因为用电设备多，勉强能0.5-1个月充电一次 <br/>
       都是一种不错的选择 <br/>
-  补充几句:<br/>
+  4.4 商务前景:<br/>
   <一>特点:<br/>
   1.整体低耗能电池供电: <br/>
      解决随处摆放,低频次,随时得到信息的痛点<br/>
