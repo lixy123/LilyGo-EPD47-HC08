@@ -462,21 +462,7 @@ bool connect_nb()
   }
   Serial.println(">>> SIM 卡状态 ok ...");
 
-  error_cnt = 0;
-  //网络信号质量查询，返回信号值
-  while (true)
-  {
-    ret = send_at("AT+CSQ", "+CSQ: 0,0", 1);
-    Serial.println("ret=" + ret);
-    if (ret.indexOf("+CSQ: 0,0") == -1)
-      break;
-    delay(2000);
-
-    error_cnt++;
-    if (error_cnt >= 5)
-      return false;
-  }
-  Serial.println(">>> 射频信号 ok ...");
+ 
   error_cnt = 0;
   //查询网络注册状态
   while (true)
