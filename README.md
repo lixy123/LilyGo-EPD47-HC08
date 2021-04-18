@@ -118,6 +118,7 @@ https://github.com/ivanseidel/LinkedList<br/>
   借用了集成模块，看着显得更简洁，如果lilygo公司推出twatch2010的sim7020c扩展板，则所有器件都集成在手表内，看着会更爽.<br/>
   引脚连接见代码注释.<br/>
   效果如图，等待twatch2010的sim7020c扩展板推出.
+  实测发现蓝牙信号略比露天摆放的esp32稍弱，摆放时离墨水屏尽量近一些，不要有遮挡
  <br/>
  
   <b> 6.t-watch2020-v3_mic_blue (t-watch2020 v3带麦克风版本) </b>  <br/>
