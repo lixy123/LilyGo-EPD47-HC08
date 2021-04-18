@@ -115,8 +115,9 @@ https://github.com/ivanseidel/LinkedList<br/>
 
   <b> 5.epd47_blue_waker_center_nb_iot_twatch2019 (蓝牙主机-中心-NB-IOT-Twatch2019版本)</b>    <br/>
   是前一程序的另一版本，只不是将esp32+DS3231+sim7020c模块组合换成了内置esp32的twatch2019+sim7020c，<br/>
-  借用了集成模块，显得更简洁了，如果lilygo公司推出twatch2010的sim7020c扩展板，则都集成了手表内，看着会更简洁了.<br/>
+  借用了集成模块，看着显得更简洁，如果lilygo公司推出twatch2010的sim7020c扩展板，则所有器件都集成在手表内，看着会更爽.<br/>
   引脚连接见代码注释.<br/>
+  效果如图，等待twatch2010的sim7020c扩展板推出.
  <br/>
  
   <b> 6.t-watch2020-v3_mic_blue (t-watch2020 v3带麦克风版本) </b>  <br/>
