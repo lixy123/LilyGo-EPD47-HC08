@@ -115,9 +115,10 @@ https://github.com/ivanseidel/LinkedList<br/>
 
   <b> 5.epd47_blue_waker_center_nb_iot_twatch2019 (蓝牙主机-中心-NB-IOT-Twatch2019版本)</b>    <br/>
   是前一程序的另一版本，只不是将esp32+DS3231+sim7020c模块组合换成了内置esp32的twatch2019+sim7020c，<br/>
-  借用了集成模块，看着显得更简洁，如果lilygo公司推出twatch2010的sim7020c扩展板，则所有器件都集成在手表内，看着会更爽.<br/>
+  借用了现成的集成模块，显得更简洁，<br/>
   引脚连接见代码注释.<br/>
   效果如图，等待twatch2010的sim7020c扩展板推出.
+   <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/watch2019-ink.jpg?raw=true' /> <br/> 
   实测发现蓝牙信号略比露天摆放的esp32稍弱，摆放时离墨水屏尽量近一些，不要有遮挡
  <br/>
  
