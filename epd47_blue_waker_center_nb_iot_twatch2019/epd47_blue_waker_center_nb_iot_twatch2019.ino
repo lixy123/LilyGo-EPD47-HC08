@@ -12,9 +12,10 @@
 
   TWATCH2019休眠节能版本:
   工作状态: 50-210ma (sim7020启动/工作状态峰值电流较高)
-  休眠状态7ma (如果twat2019通过usb供电， 接电脑usb,最低电流在13ma, 但如果接充电头usb,会多6m左右,
-             可能是因为uart硬件Silicon Labs CP210x 串口硬件节能协议导致
-             如在意这5ma电流的话需深入研究原因）
+  休眠状态7ma (twatch2019通过usb供电， 
+               接电脑usb,电流7ma, 
+               如果接充电头usb,电流13ma, 把GND与d-短接变成7ma
+             ）
 
   1.虚拟串口使用的是9600,  sim7020需要提前用 AT+IPR=9600 命令将sim7020波特率改成9600
   2.华丽版本天气获取的JSON数据长达5K,天气json解析需要较大内存。
@@ -46,11 +47,11 @@
 
 
   twatch2019供电：
-  1.如果用锂电供电，则无法直接5V供电给Sim7020c vin引脚5V电压,最省事办法是twatch2019 用usb供电
-  2.如果用锂电供电，供电给Sim7020c vbat 3.3V电压, 虽然Sim7020c能工作，但pce引脚无法用了，没法引脚打开关闭sim7020供电
-  3.在usb供电时，接到pc的usb口休眠电流是7ma，接充电头usb头时是13ma，之前试过，将d-, d+引脚接gnd有可能省掉此5ma，待测试.
-  4.另一种方法是5V直接接twatch2019的锂电供电处，不清楚会不会损坏twatch2019,会有些冒险.
-  最终，充电头usb供电twatch2019,电流约13ma, 改造下usb充电线，应能做到7ma
+  1.Sim7020c如果用vin,要保证5V供电，pce引脚可用于打开关闭sim7020供电
+  2.Sim7020c如果用vbat,用3.3V-4.2V供电,但pce引脚会失效.
+  3.twatch2019通过锂电池或USB供电，扩展板的5V引脚输出电压一般不足5V, 给Sim7020c vin供电稳定性不好.  
+  最终，充电头usb供电twatch2019,电流约13ma, 如改造usb充电线电流7ma,Sim7020c的vin单独供5V电.
+  如不在乎耗电,Sim7020c vbat引脚供电,usb充电线不改进,电流约28ma左右(注:代码需调整)
 
 */
 #define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
