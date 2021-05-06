@@ -81,9 +81,10 @@ https://github.com/ivanseidel/LinkedList<br/>
       <br/>
      设计成插线板供电,不适合电池供电, 代码没有节能优化,用电大约50ma电流,普通18650电池支持不了几天,  估算公式 2000ma/24小时/50ma*0.8=1.3 <br/>
      
-   注:
+   注:<br/>
    1.与lilygo-epd47墨水屏配合使用,一个发,一个收.<br/>
-   2.程序用了 ESP32 SmartConfig 配网技术, 首次用时参考:https://www.zhangtaidong.cn/archives/124/ 微信扫描配置wifi网络.<br/>
+   2.esp32需要连接路由器,首次使用时需要配置wifi, 用了 ESP32 SmartConfig 配网技术, 首次用时参考:https://www.zhangtaidong.cn/archives/124/ 微信扫描配置wifi网络.<br/>
+     否则会每120秒重启,不能使用.<br/>
    
 
   <b> 4.epd47_blue_waker_center_nb_iot (蓝牙主机-中心-NB-IOT版本)</b>    
