@@ -52,6 +52,7 @@ https://github.com/espressif/arduino-esp32 版本:1.0.6 <br/>
 https://github.com/Xinyuan-LilyGO/LilyGo-EPD47 最新版本 <br/>
 https://github.com/bblanchon/ArduinoJson  版本: 6 <br/>
 https://github.com/ivanseidel/LinkedList 最新版本 <br/>
+     开发板选择：TTGO-T-WATCH
      电池供电. <br/>
      
   <b> 2.epd47_blue_waker_center (蓝牙主机-中心)</b>  <br/>
