@@ -28,10 +28,11 @@ LilyGo-EPD47 利用hc08蓝牙硬件实现平时休眠节能，随时按需唤醒
        15          RX<br/>
        GND         GND<br/>
     注：墨水屏进入节能休眠模式后，顶端14，15引脚处的VCC的电压输出会关闭，不能在此处取电，要从ph2.0或18650处取电<br/>   
-    hc08要进行如下AT命令预处理:<br/>
+    hc08 AT命令预处理:<br/>
     AT+MODE=1        //设置成一级节能模式(必须)<br/>
     AT+NAME=INK_047  //修改蓝牙名称，用于客户端查找蓝牙用<br/>
     AT+LED=0          //关闭led灯，省电<br/>
+    注:也可以通过连接到lilygo-epd47后,自编程序用lilygo-epd47虚拟串口传入AT命令
     
 2.ESP32  用于给前一设备信息推送<br/>
   3.1 ESP32开发板芯片(建议带psram) <br/>
@@ -45,9 +46,9 @@ LilyGo-EPD47 利用hc08蓝牙硬件实现平时休眠节能，随时按需唤醒
    <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/ink_weather.jpg?raw=true' /><br/>
    <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/ink_chixi.jpg?raw=true' /><br/>
      烧录到LilyGo-EPD47墨水屏， 实现墨水屏电池供电情境下, 平时休眠,按需显示。<br/>     
-     软件: arduino 18.13 <br/>     
+     软件: arduino 18.13 <br/>
      库文件: <br/>
-https://github.com/espressif/arduino-esp32 版本:1.0.6 <br/>     
+https://github.com/espressif/arduino-esp32 版本:1.0.6 <br/>
 https://github.com/Xinyuan-LilyGO/LilyGo-EPD47 最新版本 <br/>
 https://github.com/bblanchon/ArduinoJson  版本: 6 <br/>
 https://github.com/ivanseidel/LinkedList 最新版本 <br/>
