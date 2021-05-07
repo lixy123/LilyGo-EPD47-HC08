@@ -45,14 +45,14 @@ LilyGo-EPD47 利用hc08蓝牙硬件实现平时休眠节能，随时按需唤醒
    <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/ink_epd47_2.jpg?raw=true' /><br/>
    <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/ink_weather.jpg?raw=true' /><br/>
    <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/ink_chixi.jpg?raw=true' /><br/>
-     烧录到LilyGo-EPD47墨水屏， 实现墨水屏电池供电情境下, 平时休眠,按需显示。<br/>     
+     烧录到LilyGo-EPD47墨水屏， 实现墨水屏电池供电情境下, 平时休眠,按需显示。<br/>
      软件: arduino 18.13 <br/>
      库文件: <br/>
 https://github.com/espressif/arduino-esp32 版本:1.0.6 <br/>
 https://github.com/Xinyuan-LilyGO/LilyGo-EPD47 最新版本 <br/>
 https://github.com/bblanchon/ArduinoJson  版本: 6 <br/>
 https://github.com/ivanseidel/LinkedList 最新版本 <br/>
-     开发板选择：TTGO-T-WATCH
+     开发板选择：TTGO-T-WATCH <br/>
      电池供电. <br/>
      
   <b> 2.epd47_blue_waker_center (蓝牙主机-中心)</b>  <br/>
