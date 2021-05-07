@@ -49,6 +49,7 @@ LilyGo-EPD47 利用hc08蓝牙硬件实现平时休眠节能，随时按需唤醒
      软件: arduino 18.13 <br/>
      库文件: <br/>
 https://github.com/espressif/arduino-esp32 版本:1.0.6 <br/>
+https://github.com/Xinyuan-LilyGO/TTGO_TWatch_Library 最新版本, 仅为了用到它定义的开发板 <br/>
 https://github.com/Xinyuan-LilyGO/LilyGo-EPD47 最新版本 <br/>
 https://github.com/bblanchon/ArduinoJson  版本: 6 <br/>
 https://github.com/ivanseidel/LinkedList 最新版本 <br/>
