@@ -1,14 +1,12 @@
 #include "ble_to_hc08.h"
 
 //编译后固件大小 1.2M
-
 uint32_t send_txt_cnt = 0;
 uint32_t last_send_time = 0;
 bool first_loop = true;
 uint32_t loop_work_time = 0;
 
 hw_timer_t *timer = NULL;
-
 Manager_blue_to_hc08* objManager_blue_to_hc08;
 
 
@@ -22,7 +20,7 @@ void setup() {
   //WiFi.mode(WIFI_OFF)
   send_txt_cnt = 0;
 
-Serial.println("setup");
+  Serial.println("setup");
 
   //为防意外，n秒后强制复位重启，一般用不到。。。
   //n秒如果任务处理不完，看门狗会让esp32自动重启,防止程序跑死...
@@ -34,18 +32,12 @@ Serial.println("setup");
   timerAlarmWrite(timer, wdtTimeout * 1000 , false); //set time in us
   timerAlarmEnable(timer);                          //enable interrupt
   //timerAlarmDisable(timer);
-  
 
   objManager_blue_to_hc08 = new Manager_blue_to_hc08();
-
-
   loop_work_time = millis() / 1000;
-  delay(5000);
-
+  delay(2000);
   Serial.println("start");
 }
-
-
 
 
 
@@ -53,9 +45,9 @@ void loop()
 {
   if ( millis() / 1000 < loop_work_time)
     loop_work_time = millis() / 1000;
-    
+
   delay(1000);
-  
+
   //每n秒蓝牙发送一次
   if (millis() / 1000 - loop_work_time > 60 || first_loop)
   {
@@ -65,9 +57,10 @@ void loop()
     //设置定时狗，当设定时间没完成任务说明阻塞，重启。
     //如果用wifi，尽量避免重启，因为wifi重启后有可能重连连接不上。
 
+    //喂狗，防止在蓝牙交互中程序阻塞，
+    //如阻塞，esp32有机会复位
     timerWrite(timer, 0);
-
-    timerAlarmEnable(timer);  
+    timerAlarmEnable(timer);
 
     // objManager_blue_to_hc08->blue_connect_sendmsg(String(send_txt_cnt),false);
     //快速连接模式，不蓝牙扫描，本开发库在连接时容易阻塞
