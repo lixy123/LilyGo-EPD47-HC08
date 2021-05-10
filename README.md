@@ -136,7 +136,10 @@ https://github.com/ivanseidel/LinkedList 最新版本 <br/>
   借用了现成的集成模块，显得更简洁，<br/>
   引脚连接见代码注释.<br/>
   效果如图，等待twatch2010的sim7020c扩展板推出.
-   <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/watch2019-ink.jpg?raw=true' /> <br/> 
+    基本功能:<br/>
+    <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/watch2019-ink.jpg?raw=true' /> <br/> 
+    太阳能供电版本:<>
+    <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/ink_send.jpg?raw=true' /> <br/> 
   实测发现蓝牙信号略比露天摆放的esp32稍弱，摆放时离墨水屏尽量近一些，不要有遮挡
  <br/>
  
