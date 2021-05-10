@@ -135,12 +135,12 @@ https://github.com/ivanseidel/LinkedList 最新版本 <br/>
   是前一程序的另一版本，只不是将esp32+DS3231+sim7020c模块组合换成了内置esp32的twatch2019+sim7020c，<br/>
   借用了现成的集成模块，显得更简洁，<br/>
   引脚连接见代码注释.<br/>
-  效果如图，等待twatch2010的sim7020c扩展板推出.
+  效果如图，等待twatch2010的sim7020c扩展板推出.<br/>
     基本功能:<br/>
     <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/watch2019-ink.jpg?raw=true' /> <br/> 
-    太阳能供电版本:<>
+    太阳能供电版本:<br/>
     <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/ink_send.jpg?raw=true' /> <br/> 
-  实测发现蓝牙信号略比露天摆放的esp32稍弱，摆放时离墨水屏尽量近一些，不要有遮挡
+    注意NB-IOT天线问题,太小的天线如果遮挡容易信号不好.
  <br/>
  
   <b> 6.t-watch2020-v3_mic_blue (t-watch2020 v3带麦克风版本) </b>  <br/>
