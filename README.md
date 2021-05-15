@@ -176,9 +176,12 @@ D.按下手表上的电源按钮进入休眠<br/>
   墨水屏休眠状态，连接有低能耗BLE蓝牙设备hc08，通过蓝牙外置硬件完成被唤醒，接收文字信息功能<br/>
   hc08：一级节能模式电流约 6μA ~2.6mA （待机） /1.6mA（工作）<br/>
   
-7.2 硬件：<br/>
-   ESP32模块*1<br/>
+   <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/blynk-1.jpg?raw=true' /> <br/>
+   <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/blynk-2.jpg?raw=true' /> <br/>
    
+7.2 硬件：<br/>
+   普通ESP32模块*1<br/>
+       
 7.3 软件及编译：<br/>
   arduino 1.8.13<br/>
   arduino-esp32 版本 1.0.6<br/>
