@@ -84,8 +84,7 @@ https://github.com/ivanseidel/LinkedList 最新版本 <br/>
      1.使用Blynk技术, 借助 Blynk客户端手机APP软件将文字信息推给Blynk服务器,并转发到发送器,再由发送器转发给墨水屏显示. 初步测试过,可行.<br/><br/>
      注:<br/>
      1.如果不使用Blynk技术,则本发送器每1或5分钟唤醒一次,平时休眠即可,理论上也可设计成电池供电.<br/>
-     2.如果使用Blynk技术,则本发送器无法做成休眠唤醒, 必须设计成插线板供电,不适合电池供电,用电大约50ma电流,普通18650电池支持不了几天,  估算公式 2000ma/24小时/50ma*0.8=1.3 <br/>
-     
+     2.如果使用Blynk技术,则本发送器无法做成休眠唤醒, 必须设计成插线板供电,不适合电池供电,用电大约50ma电流,普通18650电池支持不了几天,  估算公式 2000ma/24小时/50ma*0.8=1.3 <br/>     
      
    注:<br/>
    1.与lilygo-epd47墨水屏配合使用,一个发,一个收.<br/>
@@ -93,45 +92,7 @@ https://github.com/ivanseidel/LinkedList 最新版本 <br/>
      否则会每120秒重启,不能使用.<br/>
    
 
-  <b> 4.epd47_blue_waker_center_nb_iot (蓝牙主机-中心-NB-IOT版本)</b>    
-    <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/sim7020-2.jpg?raw=true' /> <br/>
-    <img src= 'https://github.com/lixy123/LilyGo-EPD47-HC08/blob/main/sim7020-1.jpg?raw=true' /> <br/>
-      epd47_blue_waker_center_weather的 NB-IOT版本, 用nb-iot网代替wifi网<br/>
-     <b> 4.1 硬件组成：</b><br/>
-      A.ESP32开发板(建议带psram)<br/>
-      B.DS3231时钟模块 <br/>
-      C.Sim7020c模块 <br/>
-      把NB-IOT当路由器使用，适合于仓库，家里或车上没有wifi网络，或公司里虽然有wifi,但各种上网验证，不适合单片机连接上网的场合。<br/>
-     <b> 4.2 引脚连接:</b>  <br/>
-  ESP32 Sim7020c <br/> 
-  5V    5v <br/>
-  GND   GND <br/>
-  12    TX <br/>
-  13    RX <br/>
-  15    RESET  (注：仅用于sim7020复位，不用能用开，关sim7020) <br/>
-  <b> 4.3 技术说明: </b><br/>
-      通过插线板供电,如电池供电支持不了1天<br/>
-      注： 如果未来需求仅仅是在固定时间点获取天气并显示到墨水屏，ESP32不适合找到插线板供电(例如车内)，有如下2改进方案：<br/>
-      1.本套硬件的代码增加休眠节能, ESP32不用时休眠，sim7020不用时关闭，最多电流可优化到7ma左右, 可初步做到电池供电<br/>
-      2.将本代码与epd47_blue_waker代码硬件软件合一，省去本套硬件，ds3231,sim7020c连接到墨水屏上，因为用电设备多，勉强能0.5-1个月充电一次 <br/>
-      都是一种不错的选择 <br/>
-  <b>4.4 商务前景:</b><br/>
-  <一>特点:<br/>
-  1.整体低耗能电池供电: <br/>
-     解决随处摆放,低频次,随时得到信息的痛点<br/>
-  2.低配版NB-IOT路由器:  <br/>
-     解决一般的wifi连接路由器配置繁琐,甚至无网可用,有网不能连接的痛点,(例如车上，家里无宽带独居老人)<br/>
-  3.特别是独居老人,车内场景<br/>
-     给其建立了用最低成本的发出信息,收到信息的机会通道.<br/>
-  <二>定位<br/>
-   1.考虑到成本最低约300左右,适合商务礼品.<br/>
-   2.也适合技客玩家<br/>
-  <三>现存问题: <br/>
-   1.外形不够简约,大气,需重构.<br/>
-   2.nb-iot网可能仅能在某些城市可用, 可能不适合全国.<br/>
-   3.代码待磨合.<br/>
-
-  <b> 5.epd47_blue_waker_center_nb_iot_twatch2019 (蓝牙主机-中心-NB-IOT-Twatch2019版本)</b>    <br/>
+   <b> 5.epd47_blue_waker_center_nb_iot_twatch2019 (蓝牙主机-中心-NB-IOT-Twatch2019版本)</b>    <br/>
   是前一程序的另一版本，只不是将esp32+DS3231+sim7020c模块组合换成了内置esp32的twatch2019+sim7020c，<br/>
   借用了现成的集成模块，显得更简洁，<br/>
   引脚连接见代码注释.<br/>
